@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define FLASH_SIZE (FLASH_BLOCKS_COUNT * FLASH_BLOCK_SIZE * FLASH_PAGE_SIZE)
+#define FLASH_SIZE (FLASH_BLOCKS_COUNT * FLASH_PAGES_IN_BLOCK * FLASH_WORDS_ON_PAGE)
 
 typedef struct _t_flash_memory_data {
     uint32_t data_array[FLASH_SIZE];
@@ -107,16 +107,16 @@ int flash_write(uint32_t address, uint32_t size, const uint32_t *data)
 int flash_erase(uint32_t address, uint32_t size)
 {
     uint32_t i;
-    uint32_t boundary = address / FLASH_PAGE_SIZE;
-    boundary *= FLASH_PAGE_SIZE;
+    uint32_t boundary = address / FLASH_WORDS_ON_PAGE;
+    boundary *= FLASH_WORDS_ON_PAGE;
 
     if (address + size >= FLASH_SIZE) {
         printf("address out of limits\n");
         return 0;
     }
 
-    if (size % FLASH_PAGE_SIZE != 0) {
-        printf("size must be multiplicity of page size (%d)\n", FLASH_PAGE_SIZE);
+    if (size % FLASH_WORDS_ON_PAGE != 0) {
+        printf("size must be multiplicity of page size (%d)\n", FLASH_WORDS_ON_PAGE);
         return 0;
     }
 

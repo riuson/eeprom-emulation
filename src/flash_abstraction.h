@@ -11,9 +11,9 @@
 #include <stdint.h>
 
 // size of one page in words
-#define FLASH_PAGE_SIZE (512 / 4)
+#define FLASH_WORDS_ON_PAGE (512 / 4)
 // number of pages in one block
-#define FLASH_BLOCK_SIZE (8)
+#define FLASH_PAGES_IN_BLOCK (8)
 // number of blocks
 #define FLASH_BLOCKS_COUNT (16)
 
