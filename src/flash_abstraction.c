@@ -32,14 +32,14 @@ int flash_read(uint32_t address, uint32_t size, uint32_t *data)
 
     if (address + size >= FLASH_SIZE) {
         printf("address out of limits\n");
-        return 0;
+        return FLASH_RESULT_INVALID_ADDRESS;
     }
 
     for (i = 0; i < size; i++) {
         data[i] = flash_memory_data.data_array[address + i];
     }
 
-    return 1;
+    return FLASH_RESULT_SUCCESS;
 
 }
 
@@ -73,10 +73,10 @@ int flash_can_overwrite(uint32_t value_old, uint32_t value_new)
 
     if (old_data != 0) {
         // can not be overwritten without erase
-        return 0;
+        return FLASH_RESULT_NEED_ERASE;
     }
 
-    return 1;
+    return FLASH_RESULT_SUCCESS;
 }
 
 int flash_write(uint32_t address, uint32_t size, const uint32_t *data)
@@ -86,22 +86,22 @@ int flash_write(uint32_t address, uint32_t size, const uint32_t *data)
 
     if (address + size >= FLASH_SIZE) {
         printf("address out of limits\n");
-        return 0;
+        return FLASH_RESULT_INVALID_ADDRESS;
     }
 
     for (i = 0; i < size; i++) {
         old_data = flash_memory_data.data_array[address + i];
         new_data = data[i];
 
-        if (flash_can_overwrite(old_data, new_data) == 0) {
+        if (flash_can_overwrite(old_data, new_data) == FLASH_RESULT_NEED_ERASE) {
             printf("cannot write 1 (%08x) to 0 (%08x) without erase at address (%08x) !!!\n", new_data, old_data, address);
-            return 0;
+            return FLASH_RESULT_NEED_ERASE;
         }
 
         flash_memory_data.data_array[address + i] = new_data;
     }
 
-    return 1;
+    return FLASH_RESULT_SUCCESS;
 }
 
 int flash_erase(uint32_t address, uint32_t size)
@@ -112,24 +112,24 @@ int flash_erase(uint32_t address, uint32_t size)
 
     if (address + size >= FLASH_SIZE) {
         printf("address out of limits\n");
-        return 0;
+        return FLASH_RESULT_INVALID_ADDRESS;
     }
 
     if (size % FLASH_WORDS_ON_PAGE != 0) {
         printf("size must be multiplicity of page size (%d)\n", FLASH_WORDS_ON_PAGE);
-        return 0;
+        return FLASH_RESULT_INVALID_ADDRESS;
     }
 
     if (boundary != address) {
         printf("address %08x must be equals on page boundary %08x\n", address, boundary);
-        return 0;
+        return FLASH_RESULT_INVALID_ADDRESS;
     }
 
     for (i = 0; i < size; i++) {
         flash_memory_data.data_array[address + i] = 0xffffffff;
     }
 
-    return 1;
+    return FLASH_RESULT_SUCCESS;
 }
 
 void flash_print_debug(uint32_t address, uint32_t size)

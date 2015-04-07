@@ -17,6 +17,10 @@
 // number of blocks
 #define FLASH_BLOCKS_COUNT (16)
 
+#define FLASH_RESULT_SUCCESS (0)
+#define FLASH_RESULT_INVALID_ADDRESS (1)
+#define FLASH_RESULT_NEED_ERASE (2)
+
 void flash_init_debug();
 int flash_read(uint32_t address, uint32_t size, uint32_t *data);
 int flash_can_overwrite(uint32_t value_old, uint32_t value_new);
