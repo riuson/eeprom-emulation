@@ -188,7 +188,7 @@ static int eeprom_move_current_page()
 
         // find this key on the next page
         // if not found
-        if (eeprom_find_key_from_end(next_page_address, stored_key, &stored_value) == EEPROM_RESULT_SUCCESS) {
+        if (eeprom_find_key_from_end(next_page_address, stored_key, &stored_value) == EEPROM_RESULT_KEY_NOT_FOUND) {
             // copy from active to next
             stored_value = stored & 0x0000ffff;
             eeprom_store_value(next_page_address, stored_key, stored_value);
