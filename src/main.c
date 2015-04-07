@@ -29,11 +29,27 @@ int main(void)
         FLASH_PAGES_IN_BLOCK,
         FLASH_BLOCKS_COUNT);
 
-    eeprom_write_value(0x1234, 0xaa55);
-    eeprom_write_value(0x5678, 0xbbcc);
-    eeprom_read_value(0x1234, &a);
-    eeprom_read_value(0x5678, &b);
-    flash_print_debug(0, 512);
+    for (a = 0; a < 50; a++) {
+        eeprom_write_value(a, 100 + a);
+    }
+
+    flash_print_debug(0, 1024);
+
+    for (a = 0; a < 50; a++) {
+        eeprom_write_value(a, 100 + a);
+    }
+
+    flash_print_debug(0, 1024);
+
+    for (a = 0; a < 50; a++) {
+        eeprom_write_value(a, 100 + a);
+    }
+
+    flash_print_debug(0, 1024);
+    //eeprom_write_value(0x5678, 0xbbcc);
+    //eeprom_read_value(0x1234, &a);
+    //eeprom_read_value(0x5678, &b);
+    //flash_print_debug(0, 512);
 
     return EXIT_SUCCESS;
 }
