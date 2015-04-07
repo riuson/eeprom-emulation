@@ -205,3 +205,23 @@ int eeprom_init_debug(
     eeprom_info.pages_on_block = pages_on_block;
     eeprom_info.blocks_count = blocks_count;
 }
+
+int eeprom_read_value(uint16_t key, uint16_t *value)
+{
+    return (eeprom_find_key_from_end(eeprom_info.flash_active_page_address, key, value));
+}
+
+int eeprom_write_value(uint16_t key, uint16_t value)
+{
+    if (eeprom_store_value(eeprom_info.flash_active_page_address, key, value) == 0) {
+        if (eeprom_move_current_page() == 0) {
+            return 0;
+        } else {
+            if (eeprom_store_value(eeprom_info.flash_active_page_address, key, value) == 0) {
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}

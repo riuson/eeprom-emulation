@@ -11,13 +11,28 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "flash_abstraction.h"
+#include "eeprom_emulation.h"
 
 int main(void)
 {
-    uint32_t data[4] = { 1, 0x12345678, 0x87654321, 0x5555aaaa };
+    uint16_t a, b;
+    //uint32_t data[4] = { 1, 0x12345678, 0x87654321, 0x5555aaaa };
     flash_init_debug();
 
-    flash_write(0x2, 4, data);
+    //flash_write(0x2, 4, data);
+    //flash_print_debug(0, 512);
+
+    eeprom_init_debug(
+        0,
+        FLASH_BLOCKS_COUNT * FLASH_PAGES_IN_BLOCK * FLASH_WORDS_ON_PAGE,
+        FLASH_WORDS_ON_PAGE,
+        FLASH_PAGES_IN_BLOCK,
+        FLASH_BLOCKS_COUNT);
+
+    eeprom_write_value(0x1234, 0xaa55);
+    eeprom_write_value(0x5678, 0xbbcc);
+    eeprom_read_value(0x1234, &a);
+    eeprom_read_value(0x5678, &b);
     flash_print_debug(0, 512);
 
     return EXIT_SUCCESS;

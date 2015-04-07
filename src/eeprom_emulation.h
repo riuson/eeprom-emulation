@@ -16,7 +16,7 @@ int eeprom_init_debug(
     uint32_t words_on_page,
     uint32_t pages_on_block,
     uint32_t blocks_count);
-int eeprom_read_value(uint16_t value_address, uint16_t *value);
-int eeprom_write_value(uint16_t value_address, uint16_t value);
+int eeprom_read_value(uint16_t key, uint16_t *value);
+int eeprom_write_value(uint16_t key, uint16_t value);
 
 #endif /* EEPROM_EMULATION_H_ */
