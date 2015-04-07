@@ -107,7 +107,9 @@ static int eeprom_find_key_from_end(uint32_t address_page, uint16_t key, uint16_
     uint32_t shift, stored;
     uint16_t stored_key, stored_value;
 
-    for (shift = address_page + eeprom_info.words_on_page - 1; shift >= address_page; shift--) {
+    shift = eeprom_info.words_on_page - 1;
+
+    while (1) {
         if (flash_read(address_page + shift, 1, &stored) != FLASH_RESULT_SUCCESS) {
             printf("cannot read value from address %08x", address_page + shift);
             return EEPROM_RESULT_READ_FAILED;
@@ -116,14 +118,16 @@ static int eeprom_find_key_from_end(uint32_t address_page, uint16_t key, uint16_
         stored_key = (stored >> 16) & 0x0000ffff;
         stored_value = stored & 0x0000ffff;
 
-        if (stored == EEPROM_PAGE_EMPTY) {
-            continue;
-        }
-
         if (stored_key == key) {
             *value = stored_value;
             return EEPROM_RESULT_SUCCESS;
         }
+
+        if (shift == 0) {
+            break;
+        }
+
+        shift--;
     }
 
     *value = 0;
@@ -172,7 +176,9 @@ static int eeprom_move_current_page()
     }
 
     // from end to start
-    for (shift = active_page_address + eeprom_info.words_on_page - 1; shift >= active_page_address; shift--) {
+    shift = eeprom_info.words_on_page - 1;
+
+    while (1) {
         if (flash_read(active_page_address + shift, 1, &stored) != FLASH_RESULT_SUCCESS) {
             printf("cannot read value from address %08x", active_page_address + shift);
             return EEPROM_RESULT_READ_FAILED;
@@ -180,7 +186,6 @@ static int eeprom_move_current_page()
 
         // get key and value
         stored_key = (stored >> 16) & 0x0000ffff;
-        //stored_value = stored & 0x0000ffff;
 
         if (stored == EEPROM_PAGE_EMPTY) {
             continue;
@@ -195,6 +200,13 @@ static int eeprom_move_current_page()
         }
 
         // if found - skip
+
+        if (shift == 0) {
+            break;
+        }
+
+        shift--;
+
     }
 
     return EEPROM_RESULT_SUCCESS;
