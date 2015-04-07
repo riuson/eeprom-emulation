@@ -209,6 +209,9 @@ static int eeprom_move_current_page()
 
     }
 
+    eeprom_info.flash_active_page_address = next_page_address;
+    flash_erase(active_page_address, eeprom_info.words_on_page);
+
     return EEPROM_RESULT_SUCCESS;
 }
 
