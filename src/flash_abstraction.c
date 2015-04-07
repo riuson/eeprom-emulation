@@ -36,7 +36,7 @@ int flash_read(uint32_t address, uint32_t size, uint32_t *data)
     }
 
     for (i = 0; i < size; i++) {
-        data[i] = flash_memory_data.data_array[i];
+        data[i] = flash_memory_data.data_array[address + i];
     }
 
     return 1;
@@ -90,7 +90,7 @@ int flash_write(uint32_t address, uint32_t size, const uint32_t *data)
     }
 
     for (i = 0; i < size; i++) {
-        old_data = flash_memory_data.data_array[i];
+        old_data = flash_memory_data.data_array[address + i];
         new_data = data[i];
 
         if (flash_can_overwrite(old_data, new_data) == 0) {
@@ -98,7 +98,7 @@ int flash_write(uint32_t address, uint32_t size, const uint32_t *data)
             return 0;
         }
 
-        flash_memory_data.data_array[i] = new_data;
+        flash_memory_data.data_array[address + i] = new_data;
     }
 
     return 1;
