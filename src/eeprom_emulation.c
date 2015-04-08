@@ -53,17 +53,24 @@ static int eeprom_find_page_by_state(uint32_t state, uint32_t *address)
     return EEPROM_RESULT_KEY_NOT_FOUND;
 }
 
+static uint32_t eeprom_calc_next_page_address(uint32_t current_address)
+{
+    uint32_t next_address = current_address + eeprom_info.words_on_page;
+
+    if (next_address >= eeprom_info.flash_address + eeprom_info.flash_size) {
+        next_address = eeprom_info.flash_address;
+    }
+
+    return next_address;
+}
+
 static int eeprom_find_next_empty_page(uint32_t *address)
 {
     uint32_t addr, page_header;
     uint32_t addr_start = eeprom_info.flash_active_page_address;
 
     // address of the next page
-    addr = addr_start + eeprom_info.words_on_page;
-
-    if (addr >= eeprom_info.flash_address + eeprom_info.flash_size) {
-        addr = eeprom_info.flash_address;
-    }
+    addr = eeprom_calc_next_page_address(addr_start);
 
     // read page header
     if (flash_read_word(addr, &page_header) != FLASH_RESULT_SUCCESS) {
@@ -246,6 +253,57 @@ int eeprom_write_value(uint16_t key, uint16_t value)
     return EEPROM_RESULT_SUCCESS;
 }
 
+int eeprom_restore_state(void)
+{
+    /*
+     * sequence:
+     * 0. current: active, next: empty >>>
+     * 1.     current: copy-out, next: empty >>>
+     * 2.         current: copy-out, next: copy-in >>>
+     * 3.             copy from current page to the next page >>>
+     * 4.                 current: copy-out, next: active >>>
+     * 5.                     current: empty (erased), next: active
+     */
+
+    uint32_t active_address, copy_in_address, copy_out_address;
+    uint8_t active_exists = 0, copy_in_exists = 0, copy_out_exists = 0;
+
+    if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_address) == EEPROM_RESULT_SUCCESS) {
+        active_exists = 1;
+    }
+
+    if (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &copy_in_address) == EEPROM_RESULT_SUCCESS) {
+        copy_in_exists = 1;
+    }
+
+    if (eeprom_find_page_by_state(EEPROM_PAGE_COPY_OUT, &copy_out_address) == EEPROM_RESULT_SUCCESS) {
+        copy_out_exists = 1;
+    }
+
+    if (copy_out_exists && !copy_in_exists && !active_exists) {
+        // terminated between 1 and 2
+        // copy-out - source page
+
+        copy_in_address = eeprom_calc_next_page_address(copy_out_address);
+
+        // erase next page
+        flash_erase(copy_in_address, eeprom_info.words_on_page);
+    } else if (copy_out_exists && copy_in_exists && !active_exists) {
+        // terminated between 2 and 4
+
+        // erase next page
+        flash_erase(copy_in_address, eeprom_info.words_on_page);
+    } else if (copy_out_exists && active_exists && !copy_in_exists) {
+        // terminated between 4 and 5
+
+        // erase previous page
+        flash_erase(copy_out_address, eeprom_info.words_on_page);
+    } else {
+        // unrecognized state, need format
+        return 0;
+    }
+}
+
 int eeprom_init_debug(
     uint32_t flash_address,
     uint32_t flash_size,
@@ -262,7 +320,7 @@ int eeprom_init_debug(
 
     if (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &intermediate_page_address) == EEPROM_RESULT_SUCCESS ||
             eeprom_find_page_by_state(EEPROM_PAGE_COPY_OUT, &intermediate_page_address) == EEPROM_RESULT_SUCCESS) {
-        // restore eeprom state
+        eeprom_restore_state();
     }
 
     if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_page_address) == EEPROM_RESULT_SUCCESS) {
