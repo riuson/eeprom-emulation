@@ -9,10 +9,19 @@
 #include "flash_abstraction.h"
 #include <stdio.h>
 
-
-#define EEPROM_KEY_MASK (0xffff0000)
-#define EEPROM_PAGE_EMPTY (0xffff0000)
-#define EEPROM_PAGE_USED (0x00000000)
+/*
+ * page status changes:
+ * 1. empty -> active
+ * 2.
+ *    active -> copy-out -> empty  -> empty    -> empty
+ *    empty  -> copy-in  -> active -> copy-out -> empty
+ *    empty  -> empty    -> empty  -> copy-in  -> active
+ */
+#define EEPROM_KEY_MASK      (0xffff0000)
+#define EEPROM_PAGE_EMPTY    (0xffff0000)
+#define EEPROM_PAGE_COPY_IN  (0xfffe0000)
+#define EEPROM_PAGE_ACTIVE   (0xfffc0000)
+#define EEPROM_PAGE_COPY_OUT (0xfff80000)
 
 typedef struct _t_eeprom_info {
     uint32_t flash_address;
@@ -34,7 +43,7 @@ static int eeprom_find_used_page(uint32_t *address)
             return EEPROM_RESULT_READ_FAILED;
         }
 
-        if ((page_header & EEPROM_KEY_MASK) == EEPROM_PAGE_USED) {
+        if ((page_header & EEPROM_KEY_MASK) == EEPROM_PAGE_ACTIVE) {
             *address = addr;
             return EEPROM_RESULT_SUCCESS;
         }
@@ -128,6 +137,9 @@ static int eeprom_move_current_page()
     uint32_t active_page_address, next_page_address;
     uint32_t shift, stored;
     uint16_t stored_key, stored_value;
+    uint32_t state_copy_in = EEPROM_PAGE_COPY_IN;
+    uint32_t state_copy_out = EEPROM_PAGE_COPY_OUT;
+    uint32_t state_active = EEPROM_PAGE_ACTIVE;
 
     active_page_address = eeprom_info.flash_active_page_address;
 
@@ -142,6 +154,11 @@ static int eeprom_move_current_page()
             return EEPROM_RESULT_READ_FAILED;
         }
     }
+
+    // current page to copy-out state
+    flash_write(active_page_address + 0, 1, &state_copy_out);
+    // next page to copy-in state
+    flash_write(next_page_address + 0, 1, &state_copy_in);
 
     // from end to start
     shift = eeprom_info.words_on_page - 1;
@@ -175,6 +192,11 @@ static int eeprom_move_current_page()
         shift--;
 
     }
+
+    // next page to active state
+    flash_write(next_page_address, 1, state_active);
+    // current page to empty state
+    // flash_write(next_page_address, 1, state_active);
 
     eeprom_info.flash_active_page_address = next_page_address;
     flash_erase(active_page_address, eeprom_info.words_on_page);
