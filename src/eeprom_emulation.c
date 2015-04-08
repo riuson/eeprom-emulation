@@ -253,7 +253,7 @@ int eeprom_write_value(uint16_t key, uint16_t value)
     return EEPROM_RESULT_SUCCESS;
 }
 
-static int eeprom_restore_state(void)
+static int eeprom_check_state(void)
 {
     /*
      * sequence:
@@ -266,21 +266,70 @@ static int eeprom_restore_state(void)
      */
 
     uint32_t active_address, copy_in_address, copy_out_address;
-    uint8_t active_exists = 0, copy_in_exists = 0, copy_out_exists = 0;
+    uint8_t active_exists, copy_in_exists, copy_out_exists;
 
-    if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_address) == EEPROM_RESULT_SUCCESS) {
-        active_exists = 1;
+    switch (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_address)) {
+        case EEPROM_RESULT_SUCCESS: {
+            active_exists = 1;
+            break;
+        }
+
+        case EEPROM_RESULT_KEY_NOT_FOUND: {
+            active_exists = 0;
+            break;
+        }
+
+        case EEPROM_RESULT_READ_FAILED: {
+            return EEPROM_RESULT_READ_FAILED;
+        }
     }
 
-    if (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &copy_in_address) == EEPROM_RESULT_SUCCESS) {
-        copy_in_exists = 1;
+    switch (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &copy_in_address)) {
+        case EEPROM_RESULT_SUCCESS: {
+            copy_in_exists = 1;
+            break;
+        }
+
+        case EEPROM_RESULT_KEY_NOT_FOUND: {
+            copy_in_exists = 0;
+            break;
+        }
+
+        case EEPROM_RESULT_READ_FAILED: {
+            return EEPROM_RESULT_READ_FAILED;
+        }
     }
 
-    if (eeprom_find_page_by_state(EEPROM_PAGE_COPY_OUT, &copy_out_address) == EEPROM_RESULT_SUCCESS) {
-        copy_out_exists = 1;
+    switch (eeprom_find_page_by_state(EEPROM_PAGE_COPY_OUT, &copy_out_address)) {
+        case EEPROM_RESULT_SUCCESS: {
+            copy_out_exists = 1;
+            break;
+        }
+
+        case EEPROM_RESULT_KEY_NOT_FOUND: {
+            copy_out_exists = 0;
+            break;
+        }
+
+        case EEPROM_RESULT_READ_FAILED: {
+            return EEPROM_RESULT_READ_FAILED;
+        }
     }
 
-    if (copy_out_exists && !copy_in_exists && !active_exists) {
+    if (!copy_out_exists && !copy_in_exists && active_exists) {
+        // all ok
+        return EEPROM_RESULT_SUCCESS;
+    } else if (!copy_out_exists && !copy_in_exists && !active_exists) {
+        // no one known page found
+
+        // erase first page
+        flash_erase(eeprom_info.flash_address, eeprom_info.words_on_page);
+
+        // set it active
+        flash_write_word(eeprom_info.flash_address, EEPROM_PAGE_ACTIVE);
+
+        return EEPROM_RESULT_SUCCESS;
+    } else if (copy_out_exists && !copy_in_exists && !active_exists) {
         // terminated between 1 and 2
         // copy-out - source page
 
@@ -293,7 +342,7 @@ static int eeprom_restore_state(void)
         eeprom_info.flash_active_page_address = copy_out_address;
         eeprom_move_current_page();
 
-        return 1;
+        return EEPROM_RESULT_SUCCESS;
     } else if (copy_out_exists && copy_in_exists && !active_exists) {
         // terminated between 2 and 4
 
@@ -304,14 +353,14 @@ static int eeprom_restore_state(void)
         eeprom_info.flash_active_page_address = copy_out_address;
         eeprom_move_current_page();
 
-        return 1;
+        return EEPROM_RESULT_SUCCESS;
     } else if (copy_out_exists && active_exists && !copy_in_exists) {
         // terminated between 4 and 5
 
         // erase previous page
         flash_erase(copy_out_address, eeprom_info.words_on_page);
 
-        return 1;
+        return EEPROM_RESULT_SUCCESS;
     }
 
     // unrecognized state, need format
@@ -343,10 +392,7 @@ int eeprom_init_debug(
     //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
     //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_ACTIVE);
 
-    if (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &intermediate_page_address) == EEPROM_RESULT_SUCCESS ||
-            eeprom_find_page_by_state(EEPROM_PAGE_COPY_OUT, &intermediate_page_address) == EEPROM_RESULT_SUCCESS) {
-        eeprom_restore_state();
-    }
+    eeprom_check_state();
 
     if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_page_address) == EEPROM_RESULT_SUCCESS) {
         eeprom_info.flash_active_page_address = active_page_address;
