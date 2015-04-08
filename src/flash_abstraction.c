@@ -26,18 +26,16 @@ void flash_init_debug()
     }
 }
 
-int flash_read(uint32_t address, uint32_t size, uint32_t *data)
+int flash_read_word(uint32_t address, uint32_t *data)
 {
     uint32_t i;
 
-    if (address + size >= FLASH_SIZE) {
+    if (address >= FLASH_SIZE) {
         printf("address out of limits\n");
         return FLASH_RESULT_INVALID_ADDRESS;
     }
 
-    for (i = 0; i < size; i++) {
-        data[i] = flash_memory_data.data_array[address + i];
-    }
+    *data = flash_memory_data.data_array[address];
 
     return FLASH_RESULT_SUCCESS;
 
@@ -79,27 +77,24 @@ int flash_can_overwrite(uint32_t value_old, uint32_t value_new)
     return FLASH_RESULT_SUCCESS;
 }
 
-int flash_write(uint32_t address, uint32_t size, const uint32_t *data)
+int flash_write_word(uint32_t address, uint32_t data)
 {
     uint32_t i;
-    uint32_t old_data, new_data;
+    uint32_t old_data;
 
-    if (address + size >= FLASH_SIZE) {
+    if (address >= FLASH_SIZE) {
         printf("address out of limits\n");
         return FLASH_RESULT_INVALID_ADDRESS;
     }
 
-    for (i = 0; i < size; i++) {
-        old_data = flash_memory_data.data_array[address + i];
-        new_data = data[i];
+    old_data = flash_memory_data.data_array[address];
 
-        if (flash_can_overwrite(old_data, new_data) == FLASH_RESULT_NEED_ERASE) {
-            printf("cannot write 1 (%08x) to 0 (%08x) without erase at address (%08x) !!!\n", new_data, old_data, address);
-            return FLASH_RESULT_NEED_ERASE;
-        }
-
-        flash_memory_data.data_array[address + i] = new_data;
+    if (flash_can_overwrite(old_data, data) == FLASH_RESULT_NEED_ERASE) {
+        printf("cannot write 1 (%08x) to 0 (%08x) without erase at address (%08x) !!!\n", data, old_data, address);
+        return FLASH_RESULT_NEED_ERASE;
     }
+
+    flash_memory_data.data_array[address] = data;
 
     return FLASH_RESULT_SUCCESS;
 }

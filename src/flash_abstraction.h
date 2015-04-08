@@ -20,9 +20,9 @@
 #define FLASH_RESULT_NEED_ERASE (2)
 
 void flash_init_debug();
-int flash_read(uint32_t address, uint32_t size, uint32_t *data);
+int flash_read_word(uint32_t address, uint32_t *data);
 int flash_can_overwrite(uint32_t value_old, uint32_t value_new);
-int flash_write(uint32_t address, uint32_t size, const uint32_t *data);
+int flash_write_word(uint32_t address, uint32_t data);
 int flash_erase(uint32_t address, uint32_t size);
 void flash_print_debug(uint32_t address, uint32_t size);
 
