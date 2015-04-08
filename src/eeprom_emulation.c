@@ -253,7 +253,7 @@ int eeprom_write_value(uint16_t key, uint16_t value)
     return EEPROM_RESULT_SUCCESS;
 }
 
-int eeprom_restore_state(void)
+static int eeprom_restore_state(void)
 {
     /*
      * sequence:
@@ -288,20 +288,34 @@ int eeprom_restore_state(void)
 
         // erase next page
         flash_erase(copy_in_address, eeprom_info.words_on_page);
+
+        // repeat copy
+        eeprom_info.flash_active_page_address = copy_out_address;
+        eeprom_move_current_page();
+
+        return 1;
     } else if (copy_out_exists && copy_in_exists && !active_exists) {
         // terminated between 2 and 4
 
         // erase next page
         flash_erase(copy_in_address, eeprom_info.words_on_page);
+
+        // repeat copy
+        eeprom_info.flash_active_page_address = copy_out_address;
+        eeprom_move_current_page();
+
+        return 1;
     } else if (copy_out_exists && active_exists && !copy_in_exists) {
         // terminated between 4 and 5
 
         // erase previous page
         flash_erase(copy_out_address, eeprom_info.words_on_page);
-    } else {
-        // unrecognized state, need format
-        return 0;
+
+        return 1;
     }
+
+    // unrecognized state, need format
+    return 0;
 }
 
 int eeprom_init_debug(
@@ -317,6 +331,17 @@ int eeprom_init_debug(
     eeprom_info.flash_size = flash_size;
     eeprom_info.words_on_page = words_on_page;
     eeprom_info.pages_count = pages_count;
+
+    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_ACTIVE);
+
+    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
+    //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_EMPTY);
+
+    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
+    //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_COPY_IN);
+
+    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
+    //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_ACTIVE);
 
     if (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &intermediate_page_address) == EEPROM_RESULT_SUCCESS ||
             eeprom_find_page_by_state(EEPROM_PAGE_COPY_OUT, &intermediate_page_address) == EEPROM_RESULT_SUCCESS) {
