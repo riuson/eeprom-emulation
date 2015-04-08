@@ -11,18 +11,14 @@
 
 #define FLASH_SIZE (FLASH_PAGES_COUNT * FLASH_WORDS_ON_PAGE)
 
-typedef struct _t_flash_memory_data {
-    uint32_t data_array[FLASH_SIZE];
-} t_flash_memory_data;
-
-static t_flash_memory_data flash_memory_data;
+static uint32_t flash_data_array[FLASH_SIZE];
 
 void flash_init_debug()
 {
     uint32_t i;
 
     for (i = 0; i < FLASH_SIZE; i++) {
-        flash_memory_data.data_array[i] = 0xffffffff;
+        flash_data_array[i] = 0xffffffff;
     }
 }
 
@@ -33,7 +29,7 @@ int flash_read_word(uint32_t address, uint32_t *data)
         return FLASH_RESULT_INVALID_ADDRESS;
     }
 
-    *data = flash_memory_data.data_array[address];
+    *data = flash_data_array[address];
 
     return FLASH_RESULT_SUCCESS;
 
@@ -84,14 +80,14 @@ int flash_write_word(uint32_t address, uint32_t data)
         return FLASH_RESULT_INVALID_ADDRESS;
     }
 
-    old_data = flash_memory_data.data_array[address];
+    old_data = flash_data_array[address];
 
     if (flash_can_overwrite(old_data, data) == FLASH_RESULT_NEED_ERASE) {
         printf("cannot write 1 (%08x) to 0 (%08x) without erase at address (%08x) !!!\n", data, old_data, address);
         return FLASH_RESULT_NEED_ERASE;
     }
 
-    flash_memory_data.data_array[address] = data;
+    flash_data_array[address] = data;
 
     return FLASH_RESULT_SUCCESS;
 }
@@ -118,7 +114,7 @@ int flash_erase(uint32_t address, uint32_t size)
     }
 
     for (i = 0; i < size; i++) {
-        flash_memory_data.data_array[address + i] = 0xffffffff;
+        flash_data_array[address + i] = 0xffffffff;
     }
 
     return FLASH_RESULT_SUCCESS;
@@ -127,7 +123,7 @@ int flash_erase(uint32_t address, uint32_t size)
 void flash_print_debug(uint32_t address, uint32_t size)
 {
     uint32_t i, j, k;
-    uint8_t *data = (uint8_t *) &flash_memory_data.data_array[0];
+    uint8_t *data = (uint8_t *) &flash_data_array[0];
 
     for (i = 0; i < size; i += 256) {
         printf("Block at 0x%08x\n", address + i);
