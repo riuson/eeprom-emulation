@@ -33,7 +33,7 @@ typedef struct _t_eeprom_info {
 
 static t_eeprom_info eeprom_info;
 
-static int eeprom_find_intermediate_page(uint32_t *address)
+static int eeprom_find_page_by_state(uint32_t state, uint32_t *address)
 {
     uint32_t addr, page_header;
 
@@ -43,9 +43,7 @@ static int eeprom_find_intermediate_page(uint32_t *address)
             return EEPROM_RESULT_READ_FAILED;
         }
 
-        if (((page_header & EEPROM_KEY_MASK) != EEPROM_PAGE_ACTIVE) ||
-                ((page_header & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY)) {
-            printf("detected intermediate page\n");
+        if ((page_header & EEPROM_KEY_MASK) == state) {
             *address = addr;
             return EEPROM_RESULT_SUCCESS;
         }
@@ -53,27 +51,6 @@ static int eeprom_find_intermediate_page(uint32_t *address)
 
     *address = 0;
     return EEPROM_RESULT_KEY_NOT_FOUND;
-}
-
-static int eeprom_find_active_page(uint32_t *address)
-{
-    uint32_t addr, page_header;
-
-    for (addr = eeprom_info.flash_address; addr < eeprom_info.flash_address + eeprom_info.flash_size; addr += eeprom_info.words_on_page) {
-        if (flash_read_word(addr, &page_header) != FLASH_RESULT_SUCCESS) {
-            printf("cannot read value from address %08x", addr);
-            return EEPROM_RESULT_READ_FAILED;
-        }
-
-        if ((page_header & EEPROM_KEY_MASK) == EEPROM_PAGE_ACTIVE) {
-            *address = addr;
-            return EEPROM_RESULT_SUCCESS;
-        }
-    }
-
-    printf("empty page not found!\n");
-    *address = 0;
-    return EEPROM_RESULT_NO_EMPTY_PAGE;
 }
 
 static int eeprom_find_next_empty_page(uint32_t *address)
@@ -283,11 +260,12 @@ int eeprom_init_debug(
     eeprom_info.words_on_page = words_on_page;
     eeprom_info.pages_count = pages_count;
 
-    if (eeprom_find_intermediate_page(&intermediate_page_address) == EEPROM_RESULT_SUCCESS) {
+    if (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &intermediate_page_address) == EEPROM_RESULT_SUCCESS ||
+            eeprom_find_page_by_state(EEPROM_PAGE_COPY_OUT, &intermediate_page_address) == EEPROM_RESULT_SUCCESS) {
         // restore eeprom state
     }
 
-    if (eeprom_find_active_page(&active_page_address) == EEPROM_RESULT_SUCCESS) {
+    if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_page_address) == EEPROM_RESULT_SUCCESS) {
         eeprom_info.flash_active_page_address = active_page_address;
     }
 }
