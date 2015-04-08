@@ -222,18 +222,6 @@ static int eeprom_move_current_page()
     return EEPROM_RESULT_SUCCESS;
 }
 
-int eeprom_init_debug(
-    uint32_t flash_address,
-    uint32_t flash_size,
-    uint32_t words_on_page,
-    uint32_t pages_count)
-{
-    eeprom_info.flash_address = flash_address;
-    eeprom_info.flash_size = flash_size;
-    eeprom_info.words_on_page = words_on_page;
-    eeprom_info.pages_count = pages_count;
-}
-
 int eeprom_read_value(uint16_t key, uint16_t *value)
 {
     return (eeprom_find_key_from_end(eeprom_info.flash_active_page_address, key, value));
@@ -279,4 +267,27 @@ int eeprom_write_value(uint16_t key, uint16_t value)
     }
 
     return EEPROM_RESULT_SUCCESS;
+}
+
+int eeprom_init_debug(
+    uint32_t flash_address,
+    uint32_t flash_size,
+    uint32_t words_on_page,
+    uint32_t pages_count)
+{
+    uint32_t intermediate_page_address;
+    uint32_t active_page_address;
+
+    eeprom_info.flash_address = flash_address;
+    eeprom_info.flash_size = flash_size;
+    eeprom_info.words_on_page = words_on_page;
+    eeprom_info.pages_count = pages_count;
+
+    if (eeprom_find_intermediate_page(&intermediate_page_address) == EEPROM_RESULT_SUCCESS) {
+        // restore eeprom state
+    }
+
+    if (eeprom_find_active_page(&active_page_address) == EEPROM_RESULT_SUCCESS) {
+        eeprom_info.flash_active_page_address = active_page_address;
+    }
 }
