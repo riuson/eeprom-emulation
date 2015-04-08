@@ -28,8 +28,6 @@ void flash_init_debug()
 
 int flash_read_word(uint32_t address, uint32_t *data)
 {
-    uint32_t i;
-
     if (address >= FLASH_SIZE) {
         printf("address out of limits\n");
         return FLASH_RESULT_INVALID_ADDRESS;
@@ -79,7 +77,6 @@ int flash_can_overwrite(uint32_t value_old, uint32_t value_new)
 
 int flash_write_word(uint32_t address, uint32_t data)
 {
-    uint32_t i;
     uint32_t old_data;
 
     if (address >= FLASH_SIZE) {

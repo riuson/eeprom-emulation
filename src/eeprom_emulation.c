@@ -373,7 +373,6 @@ int eeprom_init_debug(
     uint32_t words_on_page,
     uint32_t pages_count)
 {
-    uint32_t intermediate_page_address;
     uint32_t active_page_address;
 
     eeprom_info.flash_address = flash_address;
@@ -396,5 +395,8 @@ int eeprom_init_debug(
 
     if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_page_address) == EEPROM_RESULT_SUCCESS) {
         eeprom_info.flash_active_page_address = active_page_address;
+        return EEPROM_RESULT_SUCCESS;
     }
+
+    return EEPROM_RESULT_KEY_NOT_FOUND;
 }
