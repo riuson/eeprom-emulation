@@ -33,7 +33,29 @@ typedef struct _t_eeprom_info {
 
 static t_eeprom_info eeprom_info;
 
-static int eeprom_find_used_page(uint32_t *address)
+static int eeprom_find_intermediate_page(uint32_t *address)
+{
+    uint32_t addr, page_header;
+
+    for (addr = eeprom_info.flash_address; addr < eeprom_info.flash_address + eeprom_info.flash_size; addr += eeprom_info.words_on_page) {
+        if (flash_read_word(addr, &page_header) != FLASH_RESULT_SUCCESS) {
+            printf("cannot read value from address %08x", addr);
+            return EEPROM_RESULT_READ_FAILED;
+        }
+
+        if (((page_header & EEPROM_KEY_MASK) != EEPROM_PAGE_ACTIVE) ||
+                ((page_header & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY)) {
+            printf("detected intermediate page\n");
+            *address = addr;
+            return EEPROM_RESULT_SUCCESS;
+        }
+    }
+
+    *address = 0;
+    return EEPROM_RESULT_KEY_NOT_FOUND;
+}
+
+static int eeprom_find_active_page(uint32_t *address)
 {
     uint32_t addr, page_header;
 
