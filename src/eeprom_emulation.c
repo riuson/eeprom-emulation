@@ -18,8 +18,7 @@ typedef struct _t_eeprom_info {
     uint32_t flash_address;
     uint32_t flash_size;
     uint32_t words_on_page;
-    uint32_t pages_on_block;
-    uint32_t blocks_count;
+    uint32_t pages_count;
     uint32_t flash_active_page_address;
 } t_eeprom_info;
 
@@ -187,14 +186,12 @@ int eeprom_init_debug(
     uint32_t flash_address,
     uint32_t flash_size,
     uint32_t words_on_page,
-    uint32_t pages_on_block,
-    uint32_t blocks_count)
+    uint32_t pages_count)
 {
     eeprom_info.flash_address = flash_address;
     eeprom_info.flash_size = flash_size;
     eeprom_info.words_on_page = words_on_page;
-    eeprom_info.pages_on_block = pages_on_block;
-    eeprom_info.blocks_count = blocks_count;
+    eeprom_info.pages_count = pages_count;
 }
 
 int eeprom_read_value(uint16_t key, uint16_t *value)

@@ -12,10 +12,8 @@
 
 // size of one page in words
 #define FLASH_WORDS_ON_PAGE (512 / 4)
-// number of pages in one block
-#define FLASH_PAGES_IN_BLOCK (8)
-// number of blocks
-#define FLASH_BLOCKS_COUNT (16)
+// number of pages
+#define FLASH_PAGES_COUNT (16)
 
 #define FLASH_RESULT_SUCCESS (0)
 #define FLASH_RESULT_INVALID_ADDRESS (1)

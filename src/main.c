@@ -24,10 +24,9 @@ int main(void)
 
     eeprom_init_debug(
         0,
-        FLASH_BLOCKS_COUNT * FLASH_PAGES_IN_BLOCK * FLASH_WORDS_ON_PAGE,
+        FLASH_PAGES_COUNT * FLASH_WORDS_ON_PAGE,
         FLASH_WORDS_ON_PAGE,
-        FLASH_PAGES_IN_BLOCK,
-        FLASH_BLOCKS_COUNT);
+        FLASH_PAGES_COUNT);
 
     for (a = 0; a < 50; a++) {
         eeprom_write_value(a, 100 + a);

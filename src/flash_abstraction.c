@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 
-#define FLASH_SIZE (FLASH_BLOCKS_COUNT * FLASH_PAGES_IN_BLOCK * FLASH_WORDS_ON_PAGE)
+#define FLASH_SIZE (FLASH_PAGES_COUNT * FLASH_WORDS_ON_PAGE)
 
 typedef struct _t_flash_memory_data {
     uint32_t data_array[FLASH_SIZE];
