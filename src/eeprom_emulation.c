@@ -282,6 +282,10 @@ static int eeprom_check_state(void)
         case EEPROM_RESULT_READ_FAILED: {
             return EEPROM_RESULT_READ_FAILED;
         }
+
+        default: {
+            return EEPROM_RESULT_UNCATCHED_FAIL;
+        }
     }
 
     switch (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &copy_in_address)) {
@@ -297,6 +301,10 @@ static int eeprom_check_state(void)
 
         case EEPROM_RESULT_READ_FAILED: {
             return EEPROM_RESULT_READ_FAILED;
+        }
+
+        default: {
+            return EEPROM_RESULT_UNCATCHED_FAIL;
         }
     }
 
@@ -314,6 +322,10 @@ static int eeprom_check_state(void)
         case EEPROM_RESULT_READ_FAILED: {
             return EEPROM_RESULT_READ_FAILED;
         }
+
+        default: {
+            return EEPROM_RESULT_UNCATCHED_FAIL;
+        }
     }
 
     if (!copy_out_exists && !copy_in_exists && active_exists) {
@@ -323,48 +335,106 @@ static int eeprom_check_state(void)
         // no one known page found
 
         // erase first page
-        flash_erase(eeprom_info.flash_address, eeprom_info.words_on_page);
+        switch (flash_erase(eeprom_info.flash_address, eeprom_info.words_on_page)) {
+            case FLASH_RESULT_SUCCESS: {
+                break;
+            }
+
+            case FLASH_RESULT_INVALID_ADDRESS: {
+                return EEPROM_RESULT_INVALID_PARAMETERS;
+            }
+
+            default: {
+                return EEPROM_RESULT_UNCATCHED_FAIL;
+            }
+        }
 
         // set it active
-        flash_write_word(eeprom_info.flash_address, EEPROM_PAGE_ACTIVE);
+        switch (flash_write_word(eeprom_info.flash_address, EEPROM_PAGE_ACTIVE)) {
+            case FLASH_RESULT_SUCCESS: {
+                return EEPROM_RESULT_SUCCESS;
+            }
+
+            case FLASH_RESULT_INVALID_ADDRESS: {
+                return EEPROM_RESULT_INVALID_PARAMETERS;
+            }
+
+            case FLASH_RESULT_NEED_ERASE: {
+                return EEPROM_RESULT_NEED_ERASE;
+            }
+
+            default: {
+                return EEPROM_RESULT_UNCATCHED_FAIL;
+            }
+        }
 
         return EEPROM_RESULT_SUCCESS;
-    } else if (copy_out_exists && !copy_in_exists && !active_exists) {
+    } else if (
         // terminated between 1 and 2
         // copy-out - source page
-
+        (copy_out_exists && !copy_in_exists && !active_exists)
+        ||
+        // terminated between 2 and 4
+        (copy_out_exists && copy_in_exists && !active_exists)
+    ) {
         copy_in_address = eeprom_calc_next_page_address(copy_out_address);
 
         // erase next page
-        flash_erase(copy_in_address, eeprom_info.words_on_page);
+        switch (flash_erase(copy_in_address, eeprom_info.words_on_page)) {
+            case FLASH_RESULT_SUCCESS: {
+                break;
+            }
+
+            case FLASH_RESULT_INVALID_ADDRESS: {
+                return EEPROM_RESULT_INVALID_PARAMETERS;
+            }
+
+            default: {
+                return EEPROM_RESULT_UNCATCHED_FAIL;
+            }
+        }
 
         // repeat copy
         eeprom_info.flash_active_page_address = copy_out_address;
-        eeprom_move_current_page();
 
-        return EEPROM_RESULT_SUCCESS;
-    } else if (copy_out_exists && copy_in_exists && !active_exists) {
-        // terminated between 2 and 4
+        switch (eeprom_move_current_page()) {
+            case EEPROM_RESULT_SUCCESS: {
+                return EEPROM_RESULT_SUCCESS;
+            }
 
-        // erase next page
-        flash_erase(copy_in_address, eeprom_info.words_on_page);
+            case EEPROM_RESULT_READ_FAILED: {
+                return EEPROM_RESULT_READ_FAILED;
+            }
 
-        // repeat copy
-        eeprom_info.flash_active_page_address = copy_out_address;
-        eeprom_move_current_page();
+            case EEPROM_RESULT_NO_EMPTY_PAGE: {
+                return EEPROM_RESULT_NO_EMPTY_PAGE;
+            }
 
-        return EEPROM_RESULT_SUCCESS;
+            default: {
+                return EEPROM_RESULT_UNCATCHED_FAIL;
+            }
+        }
     } else if (copy_out_exists && active_exists && !copy_in_exists) {
         // terminated between 4 and 5
 
         // erase previous page
-        flash_erase(copy_out_address, eeprom_info.words_on_page);
+        switch (flash_erase(copy_out_address, eeprom_info.words_on_page)) {
+            case FLASH_RESULT_SUCCESS: {
+                return EEPROM_RESULT_SUCCESS;
+            }
 
-        return EEPROM_RESULT_SUCCESS;
+            case FLASH_RESULT_INVALID_ADDRESS: {
+                return EEPROM_RESULT_INVALID_PARAMETERS;
+            }
+
+            default: {
+                return EEPROM_RESULT_UNCATCHED_FAIL;
+            }
+        }
     }
 
     // unrecognized state, need format
-    return 0;
+    return EEPROM_RESULT_UNCATCHED_FAIL;
 }
 
 int eeprom_init_debug(
@@ -388,15 +458,17 @@ int eeprom_init_debug(
     //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
     //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_COPY_IN);
 
-    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
-    //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_ACTIVE);
+    flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
+    flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_ACTIVE);
 
-    eeprom_check_state();
+    if (eeprom_check_state() != EEPROM_RESULT_SUCCESS) {
+        // format all
+    }
 
     if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_page_address) == EEPROM_RESULT_SUCCESS) {
         eeprom_info.flash_active_page_address = active_page_address;
         return EEPROM_RESULT_SUCCESS;
     }
 
-    return EEPROM_RESULT_KEY_NOT_FOUND;
+    return EEPROM_RESULT_UNCATCHED_FAIL;
 }

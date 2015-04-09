@@ -15,6 +15,9 @@
 #define EEPROM_RESULT_NO_EMPTY_PAGE (2)
 #define EEPROM_RESULT_KEY_NOT_FOUND (3)
 #define EEPROM_RESULT_NO_EMPTY_RECORD (4)
+#define EEPROM_RESULT_INVALID_PARAMETERS (5)
+#define EEPROM_RESULT_NEED_ERASE (6)
+#define EEPROM_RESULT_UNCATCHED_FAIL (0xff)
 
 int eeprom_init_debug(
     uint32_t flash_address,
