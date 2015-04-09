@@ -369,14 +369,10 @@ static int eeprom_check_state(void)
         }
 
         return EEPROM_RESULT_SUCCESS;
-    } else if (
-        // terminated between 1 and 2
-        // copy-out - source page
-        (copy_out_exists && !copy_in_exists && !active_exists)
-        ||
-        // terminated between 2 and 4
-        (copy_out_exists && copy_in_exists && !active_exists)
-    ) {
+    } else if (copy_out_exists && !active_exists) {
+        // !copy_in_exists = terminated between 1 and 2, copy-out is a source page;
+        // copy_in_exists = terminated between 2 and 4;
+
         copy_in_address = eeprom_calc_next_page_address(copy_out_address);
 
         // erase next page
@@ -437,6 +433,45 @@ static int eeprom_check_state(void)
     return EEPROM_RESULT_UNCATCHED_FAIL;
 }
 
+static int eeprom_format(void)
+{
+    uint32_t addr, i, value;
+
+    for (i = 0, addr = eeprom_info.flash_address; i < eeprom_info.pages_count; i++, addr += eeprom_info.words_on_page) {
+        flash_erase(addr, eeprom_info.words_on_page);
+    }
+
+    for (i = 0, addr = eeprom_info.flash_address; i < eeprom_info.pages_count * eeprom_info.words_on_page; i++) {
+
+        if (flash_read_word(addr + i, &value) == FLASH_RESULT_INVALID_ADDRESS) {
+            return EEPROM_RESULT_INVALID_PARAMETERS;
+        }
+
+        if (value != 0xffffffff) {
+            return EEPROM_RESULT_NEED_ERASE;
+        }
+    }
+
+    // set it active
+    switch (flash_write_word(eeprom_info.flash_address, EEPROM_PAGE_ACTIVE)) {
+        case FLASH_RESULT_SUCCESS: {
+            return EEPROM_RESULT_SUCCESS;
+        }
+
+        case FLASH_RESULT_INVALID_ADDRESS: {
+            return EEPROM_RESULT_INVALID_PARAMETERS;
+        }
+
+        case FLASH_RESULT_NEED_ERASE: {
+            return EEPROM_RESULT_NEED_ERASE;
+        }
+
+        default: {
+            return EEPROM_RESULT_UNCATCHED_FAIL;
+        }
+    }
+}
+
 int eeprom_init_debug(
     uint32_t flash_address,
     uint32_t flash_size,
@@ -458,11 +493,11 @@ int eeprom_init_debug(
     //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
     //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_COPY_IN);
 
-    flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
-    flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_ACTIVE);
+    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
+    //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_ACTIVE);
 
     if (eeprom_check_state() != EEPROM_RESULT_SUCCESS) {
-        // format all
+        eeprom_format();
     }
 
     if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_page_address) == EEPROM_RESULT_SUCCESS) {
