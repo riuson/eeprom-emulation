@@ -50,5 +50,17 @@ int main(void)
     //eeprom_read_value(0x5678, &b);
     //flash_print_debug(0, 512);
 
+    eeprom_write_value(0, 1);
+    eeprom_write_value(0, 2);
+    eeprom_write_value(0, 3);
+    eeprom_write_value(0, 4);
+    eeprom_write_value(0, 5);
+    eeprom_write_value(0, 5);
+    eeprom_write_value(0, 5);
+    eeprom_write_value(0, 6);
+    eeprom_write_value(0, 3);
+
+    flash_print_debug(0, 1024);
+
     return EXIT_SUCCESS;
 }
