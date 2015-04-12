@@ -9,27 +9,19 @@
 #include <string.h>
 #include <stdio.h>
 
-#define FLASH_SIZE (FLASH_PAGES_COUNT * FLASH_WORDS_ON_PAGE)
-
-static uint32_t flash_data_array[FLASH_SIZE];
-
-void flash_init_debug()
-{
-    uint32_t i;
-
-    for (i = 0; i < FLASH_SIZE; i++) {
-        flash_data_array[i] = 0xffffffff;
-    }
-}
+#define FLASH_SIZE (0xffffffff)
 
 int flash_read_word(uint32_t address, uint32_t *data)
 {
+    uint32_t *p;
+
     if (address >= FLASH_SIZE) {
         printf("address out of limits\n");
         return FLASH_RESULT_INVALID_ADDRESS;
     }
 
-    *data = flash_data_array[address];
+    p = (uint32_t *)address;
+    *data = *p;
 
     return FLASH_RESULT_SUCCESS;
 
@@ -74,68 +66,41 @@ int flash_can_overwrite(uint32_t value_old, uint32_t value_new)
 int flash_write_word(uint32_t address, uint32_t data)
 {
     uint32_t old_data;
+    uint32_t *p;
 
     if (address >= FLASH_SIZE) {
         printf("address out of limits\n");
         return FLASH_RESULT_INVALID_ADDRESS;
     }
 
-    old_data = flash_data_array[address];
+    p = (uint32_t *)address;
+    old_data = *p;
 
     if (flash_can_overwrite(old_data, data) == FLASH_RESULT_NEED_ERASE) {
         printf("cannot write 1 (%08x) to 0 (%08x) without erase at address (%08x) !!!\n", data, old_data, address);
         return FLASH_RESULT_NEED_ERASE;
     }
 
-    flash_data_array[address] = data;
+    *p = data;
 
     return FLASH_RESULT_SUCCESS;
 }
 
-int flash_erase(uint32_t address, uint32_t size)
+int flash_erase_page(uint32_t page_address, uint32_t words_on_page)
 {
     uint32_t i;
-    uint32_t boundary = address / FLASH_WORDS_ON_PAGE;
-    boundary *= FLASH_WORDS_ON_PAGE;
+    uint32_t *p;
 
-    if (address + size >= FLASH_SIZE) {
+    if (page_address + (words_on_page * sizeof(uint32_t)) >= FLASH_SIZE) {
         printf("address out of limits\n");
         return FLASH_RESULT_INVALID_ADDRESS;
     }
 
-    if (size % FLASH_WORDS_ON_PAGE != 0) {
-        printf("size must be multiplicity of page size (%d)\n", FLASH_WORDS_ON_PAGE);
-        return FLASH_RESULT_INVALID_ADDRESS;
-    }
+    p = (uint32_t *)page_address;
 
-    if (boundary != address) {
-        printf("address %08x must be equals on page boundary %08x\n", address, boundary);
-        return FLASH_RESULT_INVALID_ADDRESS;
-    }
-
-    for (i = 0; i < size; i++) {
-        flash_data_array[address + i] = 0xffffffff;
+    for (i = 0; i < words_on_page; i++) {
+        p[i] = 0xffffffff;
     }
 
     return FLASH_RESULT_SUCCESS;
-}
-
-void flash_print_debug(uint32_t address, uint32_t size)
-{
-    uint32_t i, j, k;
-    uint8_t *data = (uint8_t *) &flash_data_array[0];
-
-    for (i = 0; i < size; i += 256) {
-        printf("Block at 0x%08x\n", address + i);
-
-        for (j = 0; j < 256; j += 16) {
-            printf("0x%08x: ", address + i + j);
-
-            for (k = 0; k < 16; k++) {
-                printf(" %02x", data[address + i + j + k]);
-            }
-
-            printf("\n");
-        }
-    }
 }

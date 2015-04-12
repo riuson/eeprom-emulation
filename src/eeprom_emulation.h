@@ -21,10 +21,10 @@
 
 int eeprom_init_debug(
     uint32_t flash_address,
-    uint32_t flash_size,
     uint32_t words_on_page,
     uint32_t pages_count);
 int eeprom_read_value(uint16_t key, uint16_t *value);
 int eeprom_write_value(uint16_t key, uint16_t value);
+void eeprom_print_debug(uint32_t address, uint32_t size);
 
 #endif /* EEPROM_EMULATION_H_ */
