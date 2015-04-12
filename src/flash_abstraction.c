@@ -99,7 +99,15 @@ int flash_erase_page(uint32_t page_address, uint32_t words_on_page)
     p = (uint32_t *)page_address;
 
     for (i = 0; i < words_on_page; i++) {
-        p[i] = 0xffffffff;
+        // find not empty cell
+        if (p[i] != 0xffffffff) {
+            // erase
+            for (i = 0; i < words_on_page; i++) {
+                p[i] = 0xffffffff;
+            }
+
+            return FLASH_RESULT_SUCCESS;
+        }
     }
 
     return FLASH_RESULT_SUCCESS;
