@@ -119,7 +119,7 @@ static int eeprom_find_key_from_end(uint32_t address_page, uint16_t key, uint16_
 
 static int eeprom_store_value(uint32_t address_page, uint16_t key, uint16_t value)
 {
-    uint32_t shift, stored, same = 0xffffffff;
+    uint32_t shift, stored, same = 0xffffffff, same_shift = 0xffffffff;
 
     for (shift = 1; shift < eeprom_info.words_on_page; shift++) {
         if (flash_read_word(address_page + shift, &stored) != FLASH_RESULT_SUCCESS) {
@@ -129,16 +129,25 @@ static int eeprom_store_value(uint32_t address_page, uint16_t key, uint16_t valu
 
         if ((stored & EEPROM_KEY_MASK) == ((uint32_t)key << 16)) {
             same = stored;
+            same_shift = shift;
         }
 
         // if empty record was found, save key and value
         if ((stored & EEPROM_KEY_MASK) == EEPROM_PAGE_EMPTY) {
             stored = (key << 16) | value;
 
-            if (stored != same) {
-                flash_write_word(address_page + shift, stored);
+            if (same_shift != 0xffffffff) {
+                if (same == stored) {
+                    return EEPROM_RESULT_SUCCESS;
+                }
+
+                if (flash_can_overwrite(same, stored) == FLASH_RESULT_SUCCESS) {
+                    flash_write_word(address_page + same_shift, stored);
+                    return EEPROM_RESULT_SUCCESS;
+                }
             }
 
+            flash_write_word(address_page + shift, stored);
             return EEPROM_RESULT_SUCCESS;
         }
     }

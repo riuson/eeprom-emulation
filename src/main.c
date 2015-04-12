@@ -62,5 +62,11 @@ int main(void)
 
     flash_print_debug(0, 1024);
 
+    eeprom_write_value(0x78, 0xf8);
+    flash_print_debug(0, 1024);
+
+    eeprom_write_value(0x78, 0xe0);
+    flash_print_debug(0, 1024);
+
     return EXIT_SUCCESS;
 }
