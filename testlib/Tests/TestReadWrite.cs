@@ -7,7 +7,7 @@ using testlib.Wrapper;
 namespace testlib
 {
     [TestFixture]
-    public class Test
+    public class TestReadWrite
     {
         private byte[] mMemoryArray;
         private const int AllocatedSize = 1024 * 1024;
