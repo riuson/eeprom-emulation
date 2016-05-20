@@ -20,3 +20,5 @@ fi
 
 $ASTYLE --options=$PROJECT_DIR_PATH/astyle.conf "$PROJECT_DIR_PATH/src/*.c*"
 $ASTYLE --options=$PROJECT_DIR_PATH/astyle.conf "$PROJECT_DIR_PATH/src/*.h"
+$ASTYLE --options=$PROJECT_DIR_PATH/astyle.conf "$PROJECT_DIR_PATH/wrapper/*.cpp"
+$ASTYLE --options=$PROJECT_DIR_PATH/astyle.conf "$PROJECT_DIR_PATH/wrapper/*.h"
