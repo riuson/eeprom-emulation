@@ -40,7 +40,9 @@ namespace testlib
         }
 
         [Test]
-        public void CanWriteOnlyFittableCount([Range(0, WordsOnPage + 20)]int count)
+        public void CanWriteOnlyFittableCount(
+            [Range(0, WordsOnPage + 20, WordsOnPage / 7)]
+            int count)
         {
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
@@ -53,6 +55,52 @@ namespace testlib
                 else
                 {
                     Assert.That(result, Is.EqualTo(Eeprom.Result.NoEmptyRecord));
+                }
+            }
+        }
+
+        [Test]
+        public void CanReadValues()
+        {
+            ushort count = 100;
+
+            for (ushort i = 0; i < count; i++)
+            {
+                Eeprom.Result result = Eeprom.WriteValue(i, i);
+            }
+
+            for (ushort i = 0; i < count; i++)
+            {
+                ushort value = 0;
+                Eeprom.Result result = Eeprom.ReadValue(i, ref value);
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+                Assert.That(value, Is.EqualTo(i));
+            }
+        }
+
+        [Test]
+        public void CanReadOnlyFittableCount(
+            [Range(0, WordsOnPage + 20, WordsOnPage / 7)]
+            int count)
+        {
+            for (ushort i = 0; i < count; i++)
+            {
+                Eeprom.Result result = Eeprom.WriteValue(i, i);
+            }
+
+            for (ushort i = 0; i < count; i++)
+            {
+                ushort value = 0;
+                Eeprom.Result result = Eeprom.ReadValue(i, ref value);
+
+                if (i < WordsOnPage - ReservedWords)
+                {
+                    Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+                    Assert.That(value, Is.EqualTo(i));
+                }
+                else
+                {
+                    Assert.That(result, Is.EqualTo(Eeprom.Result.KeyNotFound));
                 }
             }
         }
