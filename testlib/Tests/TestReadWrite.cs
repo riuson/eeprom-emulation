@@ -10,10 +10,10 @@ namespace testlib
     public class TestReadWrite
     {
         private byte[] mMemoryArray;
-        private const int AllocatedSize = 1024 * 1024;
-        private const int WordsOnPage = 128;
-        private const int PagesCount = 4;
-        private const int ReservedWords = 1;
+        private const uint AllocatedSize = 1024 * 1024;
+        private const uint WordsOnPage = 128;
+        private const uint PagesCount = 4;
+        private const uint ReservedWords = 1;
 
         private void ShowContent()
         {
@@ -43,7 +43,7 @@ namespace testlib
         [Test]
         public void CanWriteOnlyFittableCount(
             [Range(0, WordsOnPage + 20, WordsOnPage / 7)]
-            int count)
+            uint count)
         {
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
@@ -82,7 +82,7 @@ namespace testlib
         [Test]
         public void CanReadOnlyFittableCount(
             [Range(0, WordsOnPage + 20, WordsOnPage / 7)]
-            int count)
+            uint count)
         {
             for (ushort i = 0; i < count; i++)
             {
@@ -109,14 +109,14 @@ namespace testlib
         [Test]
         public void CanReplace(
             [Range(0, WordsOnPage - ReservedWords, WordsOnPage / 7)]
-            int count)
+            uint count)
         {
             Random rnd = new Random(DateTime.Now.Millisecond);
-            ushort[] values1 = Enumerable.Range(1, count).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
-            ushort[] values2 = Enumerable.Range(1, count).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
-            ushort[] values3 = Enumerable.Range(1, count).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
+            ushort[] values1 = Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
+            ushort[] values2 = Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
+            ushort[] values3 = Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
 
-            Action<ushort[], int> check = (_array, _count) =>
+            Action<ushort[], uint> check = (_array, _count) =>
                 {
                     for (ushort i = 0; i < Convert.ToUInt16(_count); i++)
                     {
