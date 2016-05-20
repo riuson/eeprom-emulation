@@ -10,19 +10,27 @@ namespace testlib
     public class TestReadWrite
     {
         private byte[] mMemoryArray;
-        private const uint AllocatedSize = 1024 * 1024;
+        private const uint AllocatedSize = 1024 * 100;
         private const uint WordsOnPage = 128;
         private const uint PagesCount = 4;
         private const uint ReservedWords = 1;
+        private Random mRnd;
 
         private void ShowContent()
         {
             this.mMemoryArray.Print(0, WordsOnPage * (PagesCount + 1) * sizeof(UInt32));
         }
 
+        private ushort[] GenerateArray(uint count)
+        {
+            return Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(this.mRnd.Next(0, ushort.MaxValue))).ToArray();
+        }
+
         [SetUp]
         public void Pre()
         {
+            this.mRnd = new Random(DateTime.Now.Millisecond);
+
             this.mMemoryArray = new byte[AllocatedSize];
             Eeprom.Result result = Eeprom.InitDebug(this.mMemoryArray, WordsOnPage, PagesCount);
             Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
@@ -30,7 +38,7 @@ namespace testlib
 
         [Test]
         public void CanWrite(
-            [Range(0, WordsOnPage + 20, WordsOnPage / 7)]
+            [Range(0u, WordsOnPage + 20u, WordsOnPage / 7u)]
             uint count)
         {
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
@@ -50,7 +58,7 @@ namespace testlib
 
         [Test]
         public void CanRead(
-            [Range(0, WordsOnPage + 20, WordsOnPage / 7)]
+            [Range(0u, WordsOnPage + 20u, WordsOnPage / 7u)]
             uint count)
         {
             for (ushort i = 0; i < count; i++)
@@ -76,14 +84,17 @@ namespace testlib
         }
 
         [Test]
+
+        [Repeat(100)]
         public void CanReplace(
-            [Range(0, WordsOnPage - ReservedWords, WordsOnPage / 7)]
+            [Range(1u, 4u)]
             uint count)
         {
-            Random rnd = new Random(DateTime.Now.Millisecond);
-            ushort[] values1 = Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
-            ushort[] values2 = Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
-            ushort[] values3 = Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
+            ushort[] values1 = this.GenerateArray(count);
+            ushort[] values2 = this.GenerateArray(count);
+            ushort[] values3 = this.GenerateArray(count);
+            ushort[] values4 = this.GenerateArray(count);
+            ushort[] values5 = this.GenerateArray(count);
 
             Action<ushort[], uint> check = (_array, _count) =>
                 {
@@ -105,6 +116,8 @@ namespace testlib
             check(values1, count);
             check(values2, count);
             check(values3, count);
+            check(values4, count);
+            check(values5, count);
         }
 
         [TearDown]
