@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Linq;
 using testlib.Classes;
 using testlib.Wrapper;
 
@@ -103,6 +104,38 @@ namespace testlib
                     Assert.That(result, Is.EqualTo(Eeprom.Result.KeyNotFound));
                 }
             }
+        }
+
+        [Test]
+        public void CanReplace(
+            [Range(0, WordsOnPage - ReservedWords, WordsOnPage / 7)]
+            int count)
+        {
+            Random rnd = new Random(DateTime.Now.Millisecond);
+            ushort[] values1 = Enumerable.Range(1, count).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
+            ushort[] values2 = Enumerable.Range(1, count).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
+            ushort[] values3 = Enumerable.Range(1, count).Select(_ => Convert.ToUInt16(rnd.Next(0, ushort.MaxValue))).ToArray();
+
+            Action<ushort[], int> check = (_array, _count) =>
+                {
+                    for (ushort i = 0; i < Convert.ToUInt16(_count); i++)
+                    {
+                        Eeprom.Result result = Eeprom.WriteValue(i, _array[i]);
+                        Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+                    }
+
+                    for (ushort i = 0; i < Convert.ToUInt16(_count); i++)
+                    {
+                        ushort value;
+                        Eeprom.Result result = Eeprom.ReadValue(i, out value);
+                        Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+                        Assert.That(value, Is.EqualTo(_array[i]));
+                    }
+                };
+
+            check(values1, count);
+            check(values2, count);
+            check(values3, count);
         }
 
         [TearDown]
