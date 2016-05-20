@@ -8,6 +8,10 @@
 #ifndef EEPROM_EMULATION_H_
 #define EEPROM_EMULATION_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #define EEPROM_RESULT_SUCCESS (0)
@@ -26,5 +30,9 @@ int eeprom_init_debug(
 int eeprom_read_value(uint16_t key, uint16_t *value);
 int eeprom_write_value(uint16_t key, uint16_t value);
 void eeprom_print_debug(uint32_t address, uint32_t size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* EEPROM_EMULATION_H_ */

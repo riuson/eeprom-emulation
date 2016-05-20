@@ -8,6 +8,10 @@
 #ifndef FLASH_ABSTRACTION_H_
 #define FLASH_ABSTRACTION_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #define FLASH_RESULT_SUCCESS (0)
@@ -18,5 +22,9 @@ int flash_read_word(uint32_t address, uint32_t *data);
 int flash_can_overwrite(uint32_t value_old, uint32_t value_new);
 int flash_write_word(uint32_t address, uint32_t data);
 int flash_erase_page(uint32_t page_address, uint32_t words_on_page);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FLASH_ABSTRACTION_H_ */
