@@ -22,8 +22,8 @@ namespace testlib
         public void Pre()
         {
             this.mMemoryArray = new byte[AllocatedSize];
-            Lib.EepromResult result = Lib.EepromInitDebug(this.mMemoryArray, WordsOnPage, PagesCount);
-            Assert.That(result, Is.EqualTo(Lib.EepromResult.Success));
+            Eeprom.Result result = Eeprom.InitDebug(this.mMemoryArray, WordsOnPage, PagesCount);
+            Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
         }
 
         [Test]
@@ -31,9 +31,9 @@ namespace testlib
         {
             for (ushort i = 0; i < 50; i++)
             {
-                Lib.EepromResult result = Lib.EepromWriteValue(i, i);
+                Eeprom.Result result = Eeprom.WriteValue(i, i);
 
-                Assert.That(result, Is.EqualTo(Lib.EepromResult.Success));
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
             }
         }
 
