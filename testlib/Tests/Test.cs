@@ -71,8 +71,8 @@ namespace testlib
 
             for (ushort i = 0; i < count; i++)
             {
-                ushort value = 0;
-                Eeprom.Result result = Eeprom.ReadValue(i, ref value);
+                ushort value;
+                Eeprom.Result result = Eeprom.ReadValue(i, out value);
                 Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
                 Assert.That(value, Is.EqualTo(i));
             }
@@ -90,8 +90,8 @@ namespace testlib
 
             for (ushort i = 0; i < count; i++)
             {
-                ushort value = 0;
-                Eeprom.Result result = Eeprom.ReadValue(i, ref value);
+                ushort value;
+                Eeprom.Result result = Eeprom.ReadValue(i, out value);
 
                 if (i < WordsOnPage - ReservedWords)
                 {

@@ -9,7 +9,7 @@ namespace testlib.Wrapper
         public static extern Result InitDebug(byte[] buffer, UInt32 words_on_page, UInt32 pages_count);
 
         [DllImport("wrapper.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LIB_eeprom_read_value", CallingConvention = CallingConvention.Cdecl)]
-        public static extern Result ReadValue(UInt16 key, ref UInt16 value);
+        public static extern Result ReadValue(UInt16 key, out UInt16 value);
 
         [DllImport("wrapper.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LIB_eeprom_write_value", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result WriteValue(UInt16 key, UInt16 value);
