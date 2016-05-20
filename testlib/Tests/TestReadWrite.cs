@@ -29,19 +29,7 @@ namespace testlib
         }
 
         [Test]
-        public void CanWriteValues()
-        {
-            ushort count = 100;
-
-            for (ushort i = 0; i < count; i++)
-            {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
-                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
-            }
-        }
-
-        [Test]
-        public void CanWriteOnlyFittableCount(
+        public void CanWrite(
             [Range(0, WordsOnPage + 20, WordsOnPage / 7)]
             uint count)
         {
@@ -61,26 +49,7 @@ namespace testlib
         }
 
         [Test]
-        public void CanReadValues()
-        {
-            ushort count = 100;
-
-            for (ushort i = 0; i < count; i++)
-            {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
-            }
-
-            for (ushort i = 0; i < count; i++)
-            {
-                ushort value;
-                Eeprom.Result result = Eeprom.ReadValue(i, out value);
-                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
-                Assert.That(value, Is.EqualTo(i));
-            }
-        }
-
-        [Test]
-        public void CanReadOnlyFittableCount(
+        public void CanRead(
             [Range(0, WordsOnPage + 20, WordsOnPage / 7)]
             uint count)
         {
