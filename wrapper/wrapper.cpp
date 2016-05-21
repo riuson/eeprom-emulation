@@ -16,3 +16,8 @@ WRAPPER_API int LIB_eeprom_write_value(uint16_t key, uint16_t value)
 {
     return eeprom_write_value(key, value);
 }
+
+WRAPPER_API int LIB_eeprom_keys_count(uint16_t *count)
+{
+    return eeprom_keys_count(count);
+}

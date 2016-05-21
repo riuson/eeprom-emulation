@@ -356,6 +356,56 @@ int eeprom_write_value(uint16_t key, uint16_t value)
     return EEPROM_RESULT_SUCCESS;
 }
 
+int eeprom_keys_count(uint16_t *count)
+{
+    uint32_t shift1, shift2, stored, search_key;
+    const uint32_t address_page = eeprom_info.flash_active_page_address;
+    shift1 = eeprom_info.words_on_page - 1;
+    *count = 0;
+
+    // Loop external from page end to start
+    while (1) {
+        if (flash_read_word(address_page + shift1 * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
+            printf("cannot read value from address %08x", address_page + shift1 * sizeof(uint32_t));
+            return EEPROM_RESULT_READ_FAILED;
+        }
+
+
+        if ((stored & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY) {
+            (*count)++;
+            search_key = (stored >> 16) & 0x0000ffff;
+            shift2 = shift1 - 1;
+
+            // Loop internal from external to start
+            while (shift1 > 1) {
+                if (flash_read_word(address_page + shift2 * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
+                    printf("cannot read value from address %08x", address_page + shift2 * sizeof(uint32_t));
+                    return EEPROM_RESULT_READ_FAILED;
+                }
+
+                if (search_key == (stored >> 16) & 0x0000ffff) {
+                    (*count)--;
+                    break;
+                }
+
+                if (shift2 <= 1) {
+                    break;
+                }
+
+                shift2--;
+            }
+        }
+
+        if (shift1 <= 1) {
+            break;
+        }
+
+        shift1--;
+    }
+
+    return EEPROM_RESULT_SUCCESS;
+}
+
 static int eeprom_format(void)
 {
     uint32_t shift, value;
