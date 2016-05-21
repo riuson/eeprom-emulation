@@ -1,41 +1,12 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Linq;
-using testlib.Classes;
 using testlib.Wrapper;
 
-namespace testlib
+namespace testlib.Tests
 {
     [TestFixture]
-    public class TestReadWrite
+    public class TestReadWrite : TestBase
     {
-        private byte[] mMemoryArray;
-        private const uint AllocatedSize = 1024 * 100;
-        private const uint WordsOnPage = 128;
-        private const uint PagesCount = 4;
-        private const uint ReservedWords = 1;
-        private Random mRnd;
-
-        private void ShowContent()
-        {
-            this.mMemoryArray.Print(0, WordsOnPage * (PagesCount + 1) * sizeof(UInt32));
-        }
-
-        private ushort[] GenerateArray(uint count)
-        {
-            return Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(this.mRnd.Next(0, ushort.MaxValue))).ToArray();
-        }
-
-        [SetUp]
-        public void Pre()
-        {
-            this.mRnd = new Random(DateTime.Now.Millisecond);
-
-            this.mMemoryArray = new byte[AllocatedSize];
-            Eeprom.Result result = Eeprom.InitDebug(this.mMemoryArray, WordsOnPage, PagesCount);
-            Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
-        }
-
         [Test]
         public void CanWrite(
             [Range(0u, WordsOnPage + 20u, WordsOnPage / 7u)]
@@ -118,11 +89,6 @@ namespace testlib
             check(values3, count);
             check(values4, count);
             check(values5, count);
-        }
-
-        [TearDown]
-        public void Post()
-        {
         }
     }
 }

@@ -5,38 +5,11 @@ using System.Linq;
 using testlib.Classes;
 using testlib.Wrapper;
 
-namespace testlib
+namespace testlib.Tests
 {
     [TestFixture]
-    public class TestInfo
+    public class TestInfo : TestBase
     {
-        private byte[] mMemoryArray;
-        private const uint AllocatedSize = 1024 * 100;
-        private const uint WordsOnPage = 128;
-        private const uint PagesCount = 4;
-        private const uint ReservedWords = 1;
-        private Random mRnd;
-
-        private void ShowContent()
-        {
-            this.mMemoryArray.Print(0, WordsOnPage * (PagesCount + 1) * sizeof(UInt32));
-        }
-
-        private ushort[] GenerateArray(uint count)
-        {
-            return Enumerable.Range(1, Convert.ToInt32(count)).Select(_ => Convert.ToUInt16(this.mRnd.Next(0, ushort.MaxValue))).ToArray();
-        }
-
-        [SetUp]
-        public void Pre()
-        {
-            this.mRnd = new Random(DateTime.Now.Millisecond);
-
-            this.mMemoryArray = new byte[AllocatedSize];
-            Eeprom.Result result = Eeprom.InitDebug(this.mMemoryArray, WordsOnPage, PagesCount);
-            Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
-        }
-
         [Test]
         public void CanGetKeysCount(
             [Range(0u, WordsOnPage + 40u, WordsOnPage / 7u)]
@@ -134,11 +107,6 @@ namespace testlib
             ushort key, value;
             result = Eeprom.ReadByIndex((ushort)(count + 2), out key, out value);
             Assert.That(result, Is.EqualTo(Eeprom.Result.KeyNotFound));
-        }
-
-        [TearDown]
-        public void Post()
-        {
         }
     }
 }
