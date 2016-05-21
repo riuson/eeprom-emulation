@@ -401,12 +401,25 @@ static int eeprom_check_state(void)
 {
     /*
      * sequence:
+     * #
      * 0. current: active, next: empty >>>
      * 1.     current: copy-out, next: empty >>>
      * 2.         current: copy-out, next: copy-in >>>
      * 3.             copy from current page to the next page >>>
      * 4.                 current: copy-out, next: active >>>
      * 5.                     current: empty (erased), next: active
+     *
+     *
+     *
+     * seq#  copy_out_exists    copy_in_exists   active_exists   state#  handled
+     *             -                  -                -           0        *
+     * 1.          *                  -                -           1        *
+     *             -                  *                -           2        -
+     * 2.          *                  *                -           3        *
+     * 0.          -                  -                *           4        *
+     * 4.          *                  -                *           5        *
+     *             -                  *                *           6        -
+     *             *                  *                *           7        -
      */
 
     uint32_t active_address, copy_in_address, copy_out_address;
@@ -472,10 +485,10 @@ static int eeprom_check_state(void)
         }
     }
 
-    if (!copy_out_exists && !copy_in_exists && active_exists) {
+    if (!copy_out_exists && !copy_in_exists && active_exists) {// state #4
         // all ok
         return EEPROM_RESULT_SUCCESS;
-    } else if (!copy_out_exists && !copy_in_exists && !active_exists) {
+    } else if (!copy_out_exists && !copy_in_exists && !active_exists) { // state #0
         // no one known page found
 
         // format all
@@ -499,11 +512,9 @@ static int eeprom_check_state(void)
                 return EEPROM_RESULT_UNCATCHED_FAIL;
             }
         }
-
-        return EEPROM_RESULT_SUCCESS;
-    } else if (copy_out_exists && !active_exists) {
-        // !copy_in_exists = terminated between 1 and 2, copy-out is a source page;
-        // copy_in_exists = terminated between 2 and 4;
+    } else if (copy_out_exists && !active_exists) { // state #1, #3
+        // !copy_in_exists = terminated between seq #1 and seq #2, copy-out is a source page;
+        // copy_in_exists = terminated between seq #2 and seq #4;
 
         copy_in_address = eeprom_calc_next_page_address(copy_out_address);
 
@@ -542,7 +553,7 @@ static int eeprom_check_state(void)
                 return EEPROM_RESULT_UNCATCHED_FAIL;
             }
         }
-    } else if (copy_out_exists && active_exists && !copy_in_exists) {
+    } else if (copy_out_exists && active_exists && !copy_in_exists) { // state #5
         // terminated between 4 and 5
 
         // erase previous page
