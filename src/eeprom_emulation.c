@@ -88,6 +88,51 @@ static int eeprom_find_next_empty_page(uint32_t *address)
     return EEPROM_RESULT_NO_EMPTY_PAGE;
 }
 
+static int eeprom_can_compact(uint32_t address_page)
+{
+    uint32_t shift1, shift2, stored, search_key;
+    shift1 = eeprom_info.words_on_page - 1;
+
+    // Loop external from page end to start
+    while (1) {
+        if (flash_read_word(address_page + shift1 * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
+            printf("cannot read value from address %08x", address_page + shift1 * sizeof(uint32_t));
+            return EEPROM_RESULT_READ_FAILED;
+        }
+
+        if (shift1 <= 1) {
+            break;
+        }
+
+        if ((stored & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY) {
+            search_key = (stored >> 16) & 0x0000ffff;
+            shift2 = shift1 - 1;
+
+            // Loop internal from external to start
+            while (1) {
+                if (flash_read_word(address_page + shift2 * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
+                    printf("cannot read value from address %08x", address_page + shift2 * sizeof(uint32_t));
+                    return EEPROM_RESULT_READ_FAILED;
+                }
+
+                if (search_key == (stored >> 16) & 0x0000ffff) {
+                    return EEPROM_RESULT_SUCCESS;
+                }
+
+                if (shift2 <= 1) {
+                    break;
+                }
+
+                shift2--;
+            }
+        }
+
+        shift1--;
+    }
+
+    return EEPROM_RESULT_NO_EMPTY_RECORD;
+}
+
 static int eeprom_find_key_from_end(uint32_t address_page, uint16_t key, uint16_t *value, uint32_t *valueShift)
 {
     uint32_t shift, stored, search_key;
@@ -176,6 +221,24 @@ static int eeprom_move_current_page()
 
     active_page_address = eeprom_info.flash_active_page_address;
 
+    // where no reason to move page, what cannot be compacted;
+    // so check possibility
+    switch (eeprom_can_compact(active_page_address)) {
+        case EEPROM_RESULT_NO_EMPTY_RECORD: {
+            return EEPROM_RESULT_NO_EMPTY_RECORD;
+        }
+
+        case EEPROM_RESULT_READ_FAILED: {
+            printf("read failed\n");
+            return EEPROM_RESULT_READ_FAILED;
+        }
+
+        case EEPROM_RESULT_SUCCESS: {
+            break;
+        }
+    }
+
+    // find room to new page
     switch (eeprom_find_next_empty_page(&next_page_address)) {
         case EEPROM_RESULT_NO_EMPTY_PAGE: {
             printf("empty page not found!\n");
@@ -185,6 +248,10 @@ static int eeprom_move_current_page()
         case EEPROM_RESULT_READ_FAILED: {
             printf("read failed\n");
             return EEPROM_RESULT_READ_FAILED;
+        }
+
+        case EEPROM_RESULT_SUCCESS: {
+            break;
         }
     }
 
@@ -247,7 +314,7 @@ int eeprom_write_value(uint16_t key, uint16_t value)
 {
     // try store valye
     switch (eeprom_store_value(eeprom_info.flash_active_page_address, key, value)) {
-        case EEPROM_RESULT_READ_FAILED : {
+        case EEPROM_RESULT_READ_FAILED: {
             return EEPROM_RESULT_READ_FAILED;
         }
 
@@ -256,6 +323,10 @@ int eeprom_write_value(uint16_t key, uint16_t value)
             switch (eeprom_move_current_page()) {
                 case EEPROM_RESULT_NO_EMPTY_PAGE: {
                     return EEPROM_RESULT_NO_EMPTY_PAGE;
+                }
+
+                case EEPROM_RESULT_NO_EMPTY_RECORD: {
+                    return EEPROM_RESULT_NO_EMPTY_RECORD;
                 }
 
                 case EEPROM_RESULT_READ_FAILED: {
@@ -497,7 +568,7 @@ static int eeprom_check_state(void)
 void eeprom_print_debug(uint32_t address, uint32_t size)
 {
     uint32_t i, j, k;
-    uint8_t *data = (uint8_t *) address;
+    uint8_t *data = (uint8_t *)address;
 
     for (i = 0; i < size; i += 256) {
         printf("Block at 0x%08x\n", address + i);
