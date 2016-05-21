@@ -10,3 +10,4 @@ extern "C" WRAPPER_API int LIB_eeprom_init_debug(uint32_t flash_address, uint32_
 extern "C" WRAPPER_API int LIB_eeprom_read_value(uint16_t key, uint16_t *value);
 extern "C" WRAPPER_API int LIB_eeprom_write_value(uint16_t key, uint16_t value);
 extern "C" WRAPPER_API int LIB_eeprom_keys_count(uint16_t *count);
+extern "C" WRAPPER_API int LIB_eeprom_read_by_index(uint16_t index, uint16_t *key, uint16_t *value);

@@ -17,6 +17,9 @@ namespace testlib.Wrapper
         [DllImport("wrapper.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LIB_eeprom_keys_count", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result GetKeysCount(out UInt16 count);
 
+        [DllImport("wrapper.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LIB_eeprom_read_by_index", CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result ReadByIndex(UInt16 index, out UInt16 key, out UInt16 value);
+
         public enum Result : int
         {
             Success = 0,

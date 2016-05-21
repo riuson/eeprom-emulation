@@ -21,3 +21,8 @@ WRAPPER_API int LIB_eeprom_keys_count(uint16_t *count)
 {
     return eeprom_keys_count(count);
 }
+
+WRAPPER_API int LIB_eeprom_read_by_index(uint16_t index, uint16_t *key, uint16_t *value)
+{
+    return eeprom_read_by_index(index, key, value);
+}
