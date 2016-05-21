@@ -119,7 +119,42 @@ static int eeprom_find_key_from_end(uint32_t address_page, uint16_t key, uint16_
 
 static int eeprom_store_value(uint32_t address_page, uint16_t key, uint16_t value)
 {
-    uint32_t shift, stored, same = 0xffffffff, same_shift = 0xffffffff;
+    uint32_t shift = eeprom_info.words_on_page - 1, stored, same = 0xffffffff, same_shift = 0xffffffff;
+    uint32_t to_store = (key << 16) | value;
+
+    // check for overwrite possibility on existing record
+    while (1) {
+        if (flash_read_word(address_page + shift * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
+            printf("cannot read value from address %08x", address_page + shift * sizeof(uint32_t));
+            return EEPROM_RESULT_READ_FAILED;
+        }
+
+        // same key
+        if ((stored & EEPROM_KEY_MASK) == ((uint32_t)key << 16)) {
+            same = stored;
+            same_shift = shift;
+
+            // if same value, nothing to do
+            if (same == to_store) {
+                return EEPROM_RESULT_SUCCESS;
+            }
+
+            // overwrite if can
+            if (flash_can_overwrite(same, to_store) == FLASH_RESULT_SUCCESS) {
+                flash_write_word(address_page + same_shift * sizeof(uint32_t), to_store);
+                return EEPROM_RESULT_SUCCESS;
+            }
+
+            // break loop, because need new empty record
+            break;
+        }
+
+        if (shift <= 1) {
+            break;
+        }
+
+        shift--;
+    }
 
     for (shift = 1; shift < eeprom_info.words_on_page; shift++) {
         if (flash_read_word(address_page + shift * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
@@ -134,20 +169,7 @@ static int eeprom_store_value(uint32_t address_page, uint16_t key, uint16_t valu
 
         // if empty record was found, save key and value
         if ((stored & EEPROM_KEY_MASK) == EEPROM_PAGE_EMPTY) {
-            stored = (key << 16) | value;
-
-            if (same_shift != 0xffffffff) {
-                if (same == stored) {
-                    return EEPROM_RESULT_SUCCESS;
-                }
-
-                if (flash_can_overwrite(same, stored) == FLASH_RESULT_SUCCESS) {
-                    flash_write_word(address_page + same_shift * sizeof(uint32_t), stored);
-                    return EEPROM_RESULT_SUCCESS;
-                }
-            }
-
-            flash_write_word(address_page + shift * sizeof(uint32_t), stored);
+            flash_write_word(address_page + shift * sizeof(uint32_t), to_store);
             return EEPROM_RESULT_SUCCESS;
         }
     }
