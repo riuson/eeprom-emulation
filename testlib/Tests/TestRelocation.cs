@@ -7,7 +7,7 @@ using testlib.Wrapper;
 namespace testlib.Tests
 {
     [TestFixture]
-    public class TestRelocation : TestBase
+    internal class TestRelocation : TestBase
     {
         [Test]
         public void DoNotChangeMemoryWhenValueExisted(
@@ -19,7 +19,7 @@ namespace testlib.Tests
             // 1
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
+                Eeprom.Result result = this.mMemory.Write(i, i);
 
                 if (i < WordsOnPage - ReservedWords)
                 {
@@ -31,12 +31,12 @@ namespace testlib.Tests
                 }
             }
 
-            byte[] copy1 = (byte[])this.mMemoryArray.Clone();
+            byte[] copy1 = (byte[])this.mMemory.GetBufferCopy();
 
             // 2
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
+                Eeprom.Result result = this.mMemory.Write(i, i);
 
                 if (i < WordsOnPage - ReservedWords)
                 {
@@ -48,12 +48,12 @@ namespace testlib.Tests
                 }
             }
 
-            byte[] copy2 = (byte[])this.mMemoryArray.Clone();
+            byte[] copy2 = (byte[])this.mMemory.GetBufferCopy();
 
             // 3
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
+                Eeprom.Result result = this.mMemory.Write(i, i);
 
                 if (i < WordsOnPage - ReservedWords)
                 {
@@ -65,7 +65,7 @@ namespace testlib.Tests
                 }
             }
 
-            byte[] copy3 = (byte[])this.mMemoryArray.Clone();
+            byte[] copy3 = (byte[])this.mMemory.GetBufferCopy();
 
             Assert.That(copy1, Is.EqualTo(copy2));
             Assert.That(copy2, Is.EqualTo(copy3));
@@ -80,7 +80,7 @@ namespace testlib.Tests
             // 1
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
+                Eeprom.Result result = this.mMemory.Write(i, i);
 
                 if (i < WordsOnPage - ReservedWords)
                 {
@@ -92,12 +92,12 @@ namespace testlib.Tests
                 }
             }
 
-            byte[] copy1 = (byte[])this.mMemoryArray.Clone();
+            byte[] copy1 = (byte[])this.mMemory.GetBufferCopy();
 
             // 2
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
+                Eeprom.Result result = this.mMemory.Write(i, i);
 
                 if (i < WordsOnPage - ReservedWords)
                 {
@@ -113,7 +113,7 @@ namespace testlib.Tests
                 }
             }
 
-            byte[] copy2 = (byte[])this.mMemoryArray.Clone();
+            byte[] copy2 = (byte[])this.mMemory.GetBufferCopy();
 
             Assert.That(copy1, Is.EqualTo(copy2));
         }

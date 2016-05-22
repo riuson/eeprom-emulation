@@ -5,7 +5,7 @@ using testlib.Wrapper;
 namespace testlib.Tests
 {
     [TestFixture]
-    public class TestReadWrite : TestBase
+    internal class TestReadWrite : TestBase
     {
         [Test]
         public void CanWrite(
@@ -14,7 +14,7 @@ namespace testlib.Tests
         {
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
+                Eeprom.Result result = this.mMemory.Write(i, i);
 
                 if (i < WordsOnPage - ReservedWords)
                 {
@@ -34,13 +34,13 @@ namespace testlib.Tests
         {
             for (ushort i = 0; i < count; i++)
             {
-                Eeprom.Result result = Eeprom.WriteValue(i, i);
+                Eeprom.Result result = this.mMemory.Write(i, i);
             }
 
             for (ushort i = 0; i < count; i++)
             {
                 ushort value;
-                Eeprom.Result result = Eeprom.ReadValue(i, out value);
+                Eeprom.Result result = this.mMemory.Read(i, out value);
 
                 if (i < WordsOnPage - ReservedWords)
                 {
@@ -71,14 +71,14 @@ namespace testlib.Tests
                 {
                     for (ushort i = 0; i < Convert.ToUInt16(_count); i++)
                     {
-                        Eeprom.Result result = Eeprom.WriteValue(i, _array[i]);
+                        Eeprom.Result result = this.mMemory.Write(i, _array[i]);
                         Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
                     }
 
                     for (ushort i = 0; i < Convert.ToUInt16(_count); i++)
                     {
                         ushort value;
-                        Eeprom.Result result = Eeprom.ReadValue(i, out value);
+                        Eeprom.Result result = this.mMemory.Read(i, out value);
                         Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
                         Assert.That(value, Is.EqualTo(_array[i]));
                     }

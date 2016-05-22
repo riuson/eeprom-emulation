@@ -8,7 +8,7 @@ using testlib.Wrapper;
 namespace testlib.Tests
 {
     [TestFixture]
-    public class TestInfo : TestBase
+    internal class TestInfo : TestBase
     {
         [Test]
         public void CanGetKeysCount(
@@ -20,7 +20,7 @@ namespace testlib.Tests
 
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                result = Eeprom.WriteValue(i, i);
+                result = this.mMemory.Write(i, i);
 
                 if (i < WordsOnPage - ReservedWords)
                 {
@@ -33,7 +33,7 @@ namespace testlib.Tests
             }
 
             ushort countStored;
-            result = Eeprom.GetKeysCount(out countStored);
+            result = this.mMemory.GetKeysCount(out countStored);
             Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
 
             if (count < WordsOnPage - ReservedWords)
@@ -56,11 +56,11 @@ namespace testlib.Tests
 
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                result = Eeprom.WriteValue(i, array[i]);
+                result = this.mMemory.Write(i, array[i]);
             }
 
             ushort countStored;
-            result = Eeprom.GetKeysCount(out countStored);
+            result = this.mMemory.GetKeysCount(out countStored);
             Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
 
             Dictionary<ushort, ushort> readed = new Dictionary<ushort, ushort>();
@@ -68,7 +68,7 @@ namespace testlib.Tests
             for (ushort i = 0; i < countStored; i++)
             {
                 ushort key, value;
-                result = Eeprom.ReadByIndex(i, out key, out value);
+                result = this.mMemory.ReadByIndex(i, out key, out value);
                 Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
                 readed.Add(key, value);
             }
@@ -101,11 +101,11 @@ namespace testlib.Tests
 
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
             {
-                result = Eeprom.WriteValue(i, array[i]);
+                result = this.mMemory.Write(i, array[i]);
             }
 
             ushort key, value;
-            result = Eeprom.ReadByIndex((ushort)(count + 2), out key, out value);
+            result = this.mMemory.ReadByIndex((ushort)(count + 2), out key, out value);
             Assert.That(result, Is.EqualTo(Eeprom.Result.KeyNotFound));
         }
     }
