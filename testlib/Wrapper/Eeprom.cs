@@ -13,14 +13,14 @@ namespace testlib.Wrapper
             public UInt32 WordsOnPage;
             public UInt32 PagesCount;
             public UInt32 TotalSize;
-            public UInt32 ActivePageAddress;
+            public UInt32 ActivePageIndex;
 
             public Configuration(UInt32 wordOnPage, UInt32 pagesCount)
             {
                 this.WordsOnPage = wordOnPage;
                 this.PagesCount = pagesCount;
                 this.TotalSize = 0;
-                this.ActivePageAddress = 0;
+                this.ActivePageIndex = 0;
             }
         }
 
@@ -125,7 +125,7 @@ namespace testlib.Wrapper
 
         public void ShowContent()
         {
-            this.mDataBuffer.Print(0, this.mConfig.WordsOnPage * (this.mConfig.PagesCount) * sizeof(UInt32));
+            this.mDataBuffer.Print(0, this.mConfig.TotalSize);
         }
 
         public byte[] GetBufferCopy()

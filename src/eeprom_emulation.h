@@ -23,15 +23,35 @@ extern "C" {
 #define EEPROM_RESULT_NEED_ERASE (6)
 #define EEPROM_RESULT_UNCATCHED_FAIL (0xff)
 
-int eeprom_init_debug(
-    uint32_t flash_address,
-    uint32_t words_on_page,
-    uint32_t pages_count);
-int eeprom_read_value(uint16_t key, uint16_t *value);
-int eeprom_write_value(uint16_t key, uint16_t value);
-int eeprom_keys_count(uint16_t *count);
-int eeprom_read_by_index(uint16_t index, uint16_t *key, uint16_t *value);
-void eeprom_print_debug(uint32_t address, uint32_t size);
+typedef struct _t_eeprom_config {
+    uint32_t words_on_page;
+    uint32_t pages_count;
+    uint32_t total_size;
+    uint32_t active_page_index;
+} t_eeprom_config;
+
+int eeprom_init(
+    uint32_t flash_address, t_eeprom_config *config);
+
+int eeprom_read_value(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint16_t key, uint16_t *value);
+
+int eeprom_write_value(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint16_t key, uint16_t value);
+
+int eeprom_keys_count(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint16_t *count);
+
+int eeprom_read_by_index(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint16_t index, uint16_t *key, uint16_t *value);
+
+void eeprom_print_debug(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t address, uint32_t size);
 
 #ifdef __cplusplus
 }

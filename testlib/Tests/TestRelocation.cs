@@ -11,7 +11,7 @@ namespace testlib.Tests
     {
         [Test]
         public void DoNotChangeMemoryWhenValueExisted(
-            [Range(0u, WordsOnPage + 40u, WordsOnPage / 7u)]
+            [Range(0u, WordsOnPage + 20u)]
             uint count)
         {
             ushort[] array = this.GenerateArray(count);
@@ -116,6 +116,50 @@ namespace testlib.Tests
             byte[] copy2 = (byte[])this.mMemory.GetBufferCopy();
 
             Assert.That(copy1, Is.EqualTo(copy2));
+        }
+
+        [Test]
+        [Repeat(100)]
+        public void CanReadAllAfterRelocation()
+        {
+            uint count = (WordsOnPage - ReservedWords) / 2 + 1;
+            ushort[] array = this.GenerateArray(count);
+            ushort[] array2 = this.GenerateArray(count);
+            ushort[] array3 = this.GenerateArray(count);
+
+            // 1
+            for (ushort i = 0; i < Convert.ToUInt16(count); i++)
+            {
+                Eeprom.Result result = this.mMemory.Write(i, array[i]);
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+
+                {
+                    ushort readed;
+                    result = this.mMemory.Read(i, out readed);
+                    Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+                    Assert.That(readed, Is.EqualTo(array[i]));
+                }
+
+                result = this.mMemory.Write(i, array2[i]);
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+
+                {
+                    ushort readed;
+                    result = this.mMemory.Read(i, out readed);
+                    Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+                    Assert.That(readed, Is.EqualTo(array2[i]));
+                }
+
+                result = this.mMemory.Write(i, array3[i]);
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+
+                {
+                    ushort readed;
+                    result = this.mMemory.Read(i, out readed);
+                    Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+                    Assert.That(readed, Is.EqualTo(array3[i]));
+                }
+            }
         }
     }
 }

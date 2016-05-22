@@ -9,7 +9,7 @@ namespace testlib.Tests
     {
         [Test]
         public void CanWrite(
-            [Range(0u, WordsOnPage + 20u, WordsOnPage / 7u)]
+            [Range(0u, WordsOnPage + 20u)]
             uint count)
         {
             for (ushort i = 0; i < Convert.ToUInt16(count); i++)
@@ -55,10 +55,9 @@ namespace testlib.Tests
         }
 
         [Test]
-
         [Repeat(100)]
         public void CanReplace(
-            [Range(1u, 4u)]
+            [Range(26u, 26u)]
             uint count)
         {
             ushort[] values1 = this.GenerateArray(count);
