@@ -34,3 +34,29 @@ WRAPPER_API int LIB_eeprom_read_by_index(
 {
     return eeprom_read_by_index(flash_address, config, index, key, value);
 }
+
+WRAPPER_API int LIB_eeprom_low_read_word(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint32_t cell_index, uint32_t *value)
+{
+    return eeprom_low_read_word(flash_address, config, page_index, cell_index, value);
+}
+
+WRAPPER_API int LIB_eeprom_low_write_word(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint32_t cell_index, uint32_t value)
+{
+    return eeprom_low_write_word(flash_address, config, page_index, cell_index, value);
+}
+
+WRAPPER_API int LIB_eeprom_low_erase_page(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index)
+{
+    return eeprom_low_erase_page(flash_address, config, page_index);
+}
+
+WRAPPER_API int LIB_eeprom_low_can_overwrite(uint32_t value_old, uint32_t value_new)
+{
+    return eeprom_low_can_overwrite(value_old, value_new);
+}

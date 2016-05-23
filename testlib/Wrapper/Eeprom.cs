@@ -80,6 +80,26 @@ namespace testlib.Wrapper
         private static extern Result ReadByIndex(
             byte[] buffer, ref Configuration config,
             UInt16 index, out UInt16 key, out UInt16 value);
+
+        [DllImport("wrapper.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LIB_eeprom_low_read_word", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Result LowLevelReadWord(
+            byte[] buffer, ref Configuration config,
+            UInt32 pageIndex, UInt32 cellIndex, out UInt32 value);
+
+        [DllImport("wrapper.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LIB_eeprom_low_write_word", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Result LowLevelWriteWord(
+            byte[] buffer, ref Configuration config,
+            UInt32 pageIndex, UInt32 cellIndex, UInt32 value);
+
+        [DllImport("wrapper.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LIB_eeprom_low_erase_page", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Result LowLevelErasePage(
+            byte[] buffer, ref Configuration config,
+            UInt32 pageIndex);
+
+        [DllImport("wrapper.dll", SetLastError = true, CharSet = CharSet.Unicode, EntryPoint = "LIB_eeprom_low_can_overwrite", CallingConvention = CallingConvention.Cdecl)]
+        private static extern Result LowLevelCanOverwrite_(
+            UInt32 valueOld, UInt32 valueNew);
+
         #endregion
 
         private byte[] mDataBuffer;
@@ -122,6 +142,27 @@ namespace testlib.Wrapper
         {
             return Eeprom.ReadByIndex(this.mDataBuffer, ref this.mConfig, index, out key, out value);
         }
+
+        public Result LowLevelReadWord(UInt32 pageIndex, UInt32 cellIndex, out UInt32 value)
+        {
+            return Eeprom.LowLevelReadWord(this.mDataBuffer, ref this.mConfig, pageIndex, cellIndex, out value);
+        }
+
+        public Result LowLevelWriteWord(UInt32 pageIndex, UInt32 cellIndex, UInt32 value)
+        {
+            return Eeprom.LowLevelWriteWord(this.mDataBuffer, ref this.mConfig, pageIndex, cellIndex, value);
+        }
+
+        public Result LowLevelErasePage(UInt32 pageIndex)
+        {
+            return Eeprom.LowLevelErasePage(this.mDataBuffer, ref this.mConfig, pageIndex);
+        }
+
+        public Result LowLevelCanOverwrite(UInt32 valueOld, UInt32 valueNew)
+        {
+            return Eeprom.LowLevelCanOverwrite_(valueOld, valueNew);
+        }
+
 
         public void ShowContent()
         {

@@ -30,3 +30,21 @@ extern "C" WRAPPER_API
 int LIB_eeprom_read_by_index(
     uint32_t flash_address, t_eeprom_config *config,
     uint16_t index, uint16_t *key, uint16_t *value);
+
+extern "C" WRAPPER_API
+int LIB_eeprom_low_read_word(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint32_t cell_index, uint32_t *value);
+
+extern "C" WRAPPER_API
+int LIB_eeprom_low_write_word(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint32_t cell_index, uint32_t value);
+
+extern "C" WRAPPER_API
+int LIB_eeprom_low_erase_page(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index);
+
+extern "C" WRAPPER_API
+int LIB_eeprom_low_can_overwrite(uint32_t value_old, uint32_t value_new);
