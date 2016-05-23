@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Classes\MemoryHelper.cs" />
     <Compile Include="Tests\TestBase.cs" />
+    <Compile Include="Tests\TestBitsOverwrite.cs" />
     <Compile Include="Tests\TestInfo.cs" />
     <Compile Include="Tests\TestRelocation.cs" />
     <Compile Include="Tests\TestReadWrite.cs" />
