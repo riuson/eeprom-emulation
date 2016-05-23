@@ -30,6 +30,20 @@ typedef struct _t_eeprom_config {
     uint32_t active_page_index;
 } t_eeprom_config;
 
+int eeprom_low_read_word(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint32_t cell_index, uint32_t *value);
+
+int eeprom_low_write_word(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint32_t cell_index, uint32_t value);
+
+int eeprom_low_erase_page(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index);
+
+int eeprom_low_can_overwrite(uint32_t value_old, uint32_t value_new);
+
 int eeprom_init(
     uint32_t flash_address, t_eeprom_config *config);
 
