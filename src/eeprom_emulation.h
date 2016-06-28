@@ -63,10 +63,6 @@ int eeprom_read_by_index(
     uint32_t flash_address, t_eeprom_config *config,
     uint16_t index, uint16_t *key, uint16_t *value);
 
-void eeprom_print_debug(
-    uint32_t flash_address, t_eeprom_config *config,
-    uint32_t address, uint32_t size);
-
 #ifdef __cplusplus
 }
 #endif

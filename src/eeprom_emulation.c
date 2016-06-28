@@ -7,7 +7,6 @@
 
 #include "eeprom_emulation.h"
 #include "flash_abstraction.h"
-//#include <stdio.h>
 
 /*
  * page status changes:
@@ -645,28 +644,6 @@ static int eeprom_check_state(
     // unrecognized state, need format
     return EEPROM_RESULT_UNCATCHED_FAIL;
 }
-
-//void eeprom_print_debug(
-//    uint32_t flash_address, t_eeprom_config *config,
-//    uint32_t address, uint32_t size)
-//{
-//    uint32_t i, j, k;
-//    uint8_t *data = (uint8_t *)address;
-//
-//    for (i = 0; i < size; i += 256) {
-//        printf("Block at 0x%08x\n", address + i);
-//
-//        for (j = 0; j < 256; j += 16) {
-//            printf("0x%08x: ", address + i + j);
-//
-//            for (k = 0; k < 16; k++) {
-//                printf(" %02x", data[i + j + k]);
-//            }
-//
-//            printf("\n");
-//        }
-//    }
-//}
 
 int eeprom_init(
     uint32_t flash_address, t_eeprom_config *config)
