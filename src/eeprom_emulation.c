@@ -106,6 +106,8 @@ static uint32_t eeprom_calc_next_page_index(
     uint32_t flash_address, t_eeprom_config *config,
     uint32_t current_page_index)
 {
+    (void)flash_address;
+
     if ((current_page_index + 1) < config->pages_count) {
         return current_page_index + 1;
     }
@@ -368,13 +370,17 @@ int eeprom_write_value(
             switch (result = eeprom_move_current_page(flash_address, config)) {
                 case EEPROM_RESULT_SUCCESS: {
                     // try store value again
-                    switch (eeprom_store_value(flash_address, config, config->active_page_index, key, value)) {
+                    switch (result = eeprom_store_value(flash_address, config, config->active_page_index, key, value)) {
                         case EEPROM_RESULT_READ_FAILED: {
                             return EEPROM_RESULT_READ_FAILED;
                         }
 
                         case EEPROM_RESULT_NO_EMPTY_RECORD: {
                             return EEPROM_RESULT_NO_EMPTY_RECORD;
+                        }
+
+                        default: {
+                            return result;
                         }
                     }
 
