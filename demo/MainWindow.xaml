@@ -4,9 +4,23 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:demo"
+        xmlns:AppClasses="clr-namespace:demo.Classes"
+        xmlns:AppControlsSetup="clr-namespace:demo.Controls.Setup"
         mc:Ignorable="d"
         Title="EEPROM Emulation Demo" Height="350" Width="566">
     <Grid>
-        
+        <TabControl>
+            <TabItem>
+                <AppControlsSetup:ControlSetup
+                    WordsOnPageDesired="{Binding MemorySettings.WordsOnPageDesired}"
+                    PagesCountDesired="{Binding MemorySettings.PagesCountDesired}"
+                    WordsOnPage="{Binding MemorySettings.WordsOnPage}"
+                    PagesCount="{Binding MemorySettings.PagesCount}"
+                    TotalSize="{Binding MemorySettings.TotalSize}"
+                    Apply="ControlSetup_Apply"
+                    >
+                </AppControlsSetup:ControlSetup>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

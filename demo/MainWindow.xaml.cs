@@ -1,4 +1,5 @@
-﻿using System;
+﻿using demo.Classes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,19 @@ namespace demo
     /// </summary>
     public partial class MainWindow : Window
     {
+        private AppData Data { get; set; }
+
         public MainWindow()
         {
             InitializeComponent();
+
+            this.Data = new AppData();
+            this.DataContext = this.Data;
+        }
+
+        private void ControlSetup_Apply(object sender, EventArgs e)
+        {
+            this.Data.Reinitialize();
         }
     }
 }
