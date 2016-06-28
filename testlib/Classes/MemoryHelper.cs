@@ -1,6 +1,6 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace testlib.Classes
 {
@@ -41,7 +41,7 @@ namespace testlib.Classes
 
         private static void Log(string format, params object[] arg)
         {
-            Console.WriteLine(format, arg);
+            TestContext.WriteLine(format, arg);
         }
     }
 }

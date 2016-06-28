@@ -7,7 +7,6 @@
 
 #include "eeprom_emulation.h"
 #include "flash_abstraction.h"
-#include <stdio.h>
 
 /*
  * page status changes:
@@ -23,140 +22,196 @@
 #define EEPROM_PAGE_ACTIVE   (0xfffc0000)
 #define EEPROM_PAGE_COPY_OUT (0xfff80000)
 
-typedef struct _t_eeprom_info {
-    uint32_t flash_address;
-    uint32_t flash_size;
-    uint32_t words_on_page;
-    uint32_t pages_count;
-    uint32_t flash_active_page_address;
-} t_eeprom_info;
-
-static t_eeprom_info eeprom_info;
-
-static int eeprom_find_page_by_state(uint32_t state, uint32_t *address)
+static uint32_t get_page_address(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index)
 {
-    uint32_t addr, page_header, page;
+    uint32_t result = flash_address + page_index * config->words_on_page * sizeof(uint32_t);
+    return result;
+}
 
-    for (page = 0; page < eeprom_info.pages_count; page++) {
-        if (flash_read_word(eeprom_info.flash_address + page * eeprom_info.words_on_page * sizeof(uint32_t), &page_header) != FLASH_RESULT_SUCCESS) {
-            printf("cannot read value from address %08x", addr);
-            return EEPROM_RESULT_READ_FAILED;
+static int convert_flash_result(uint32_t source)
+{
+    switch (source) {
+        case FLASH_RESULT_SUCCESS: {
+            return EEPROM_RESULT_SUCCESS;
+        }
+
+        case FLASH_RESULT_NEED_ERASE: {
+            return EEPROM_RESULT_NEED_ERASE;
+        }
+
+        case FLASH_RESULT_INVALID_ADDRESS: {
+            return EEPROM_RESULT_INVALID_PARAMETERS;
+        }
+
+        default: {
+            return EEPROM_RESULT_UNCATCHED_FAIL;
+        }
+    }
+}
+
+int eeprom_low_read_word(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint32_t cell_index, uint32_t *value)
+{
+    uint32_t address = get_page_address(flash_address, config, page_index) + cell_index * sizeof(uint32_t);
+    return convert_flash_result(flash_read_word(address, value));
+}
+
+int eeprom_low_write_word(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint32_t cell_index, uint32_t value)
+{
+    uint32_t address = get_page_address(flash_address, config, page_index) + cell_index * sizeof(uint32_t);
+    return convert_flash_result(flash_write_word(address, value));
+}
+
+int eeprom_low_erase_page(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index)
+{
+    uint32_t address = get_page_address(flash_address, config, page_index);
+    return convert_flash_result(flash_erase_page(address, config->words_on_page));
+}
+
+int eeprom_low_can_overwrite(uint32_t value_old, uint32_t value_new)
+{
+    return convert_flash_result(flash_can_overwrite(value_old, value_new));
+}
+
+static int eeprom_find_page_by_state(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t state, uint32_t *page_index)
+{
+    uint32_t page_header, page;
+    uint32_t result;
+
+    for (page = 0; page < config->pages_count; page++) {
+        if ((result = eeprom_low_read_word(flash_address, config, page, 0, &page_header)) != EEPROM_RESULT_SUCCESS) {
+            return result;
         }
 
         if ((page_header & EEPROM_KEY_MASK) == state) {
-            *address = eeprom_info.flash_address + page * eeprom_info.words_on_page * sizeof(uint32_t);
+            *page_index = page;
             return EEPROM_RESULT_SUCCESS;
         }
     }
 
-    *address = 0;
+    *page_index = 0;
     return EEPROM_RESULT_KEY_NOT_FOUND;
 }
 
-static uint32_t eeprom_calc_next_page_address(uint32_t current_address)
+static uint32_t eeprom_calc_next_page_index(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t current_page_index)
 {
-    uint32_t next_address = current_address + eeprom_info.words_on_page * sizeof(uint32_t);
+    (void)flash_address;
 
-    if (next_address >= eeprom_info.flash_address + eeprom_info.flash_size) {
-        next_address = eeprom_info.flash_address;
+    if ((current_page_index + 1) < config->pages_count) {
+        return current_page_index + 1;
     }
 
-    return next_address;
+    return 0;
 }
 
-static int eeprom_find_next_empty_page(uint32_t *address)
+static int eeprom_find_next_empty_page_index(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t *page_index)
 {
-    uint32_t address_next, page_header;
-    uint32_t address_start = eeprom_info.flash_active_page_address;
+    uint32_t next_page_index, page_header;
+    uint32_t start_page_index = config->active_page_index;
+    uint32_t result;
 
-    // address of the next page
-    address_next = eeprom_calc_next_page_address(address_start);
+    // index of the next page
+    next_page_index = eeprom_calc_next_page_index(flash_address, config, start_page_index);
 
     // read page header
-    if (flash_read_word(address_next, &page_header) != FLASH_RESULT_SUCCESS) {
-        printf("cannot read value from address %08x", address_next);
-        return EEPROM_RESULT_READ_FAILED;
+    if ((result = eeprom_low_read_word(flash_address, config, next_page_index, 0, &page_header)) != EEPROM_RESULT_SUCCESS) {
+        return result;
     }
 
     if ((page_header & EEPROM_KEY_MASK) == EEPROM_PAGE_EMPTY) {
-        *address = address_next;
+        *page_index = next_page_index;
         return EEPROM_RESULT_SUCCESS;
     }
 
-    printf("empty page not found!\n");
-    *address = 0;
+    *page_index = 0;
     return EEPROM_RESULT_NO_EMPTY_PAGE;
 }
 
-static int eeprom_can_compact(uint32_t address_page)
+static int eeprom_can_compact(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index)
 {
-    uint32_t shift1, shift2, stored, search_key;
-    shift1 = eeprom_info.words_on_page - 1;
+    uint32_t offset1, offset2, stored, search_key;
+    uint32_t result;
+    offset1 = config->words_on_page - 1;
 
     // Loop external from page end to start
     while (1) {
-        if (flash_read_word(address_page + shift1 * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
-            printf("cannot read value from address %08x", address_page + shift1 * sizeof(uint32_t));
-            return EEPROM_RESULT_READ_FAILED;
+        if ((result = eeprom_low_read_word(flash_address, config, page_index, offset1, &stored)) != EEPROM_RESULT_SUCCESS) {
+            return result;
         }
 
-        if (shift1 <= 1) {
+        if (offset1 <= 1) {
             break;
         }
 
         if ((stored & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY) {
             search_key = (stored >> 16) & 0x0000ffff;
-            shift2 = shift1 - 1;
+            offset2 = offset1 - 1;
 
             // Loop internal from external to start
             while (1) {
-                if (flash_read_word(address_page + shift2 * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
-                    printf("cannot read value from address %08x", address_page + shift2 * sizeof(uint32_t));
-                    return EEPROM_RESULT_READ_FAILED;
+                if ((result = eeprom_low_read_word(flash_address, config, page_index, offset2, &stored)) != EEPROM_RESULT_SUCCESS) {
+                    return result;
                 }
 
-                if (search_key == (stored >> 16) & 0x0000ffff) {
+                if (search_key == ((stored >> 16) & 0x0000ffff)) {
                     return EEPROM_RESULT_SUCCESS;
                 }
 
-                if (shift2 <= 1) {
+                if (offset2 <= 1) {
                     break;
                 }
 
-                shift2--;
+                offset2--;
             }
         }
 
-        shift1--;
+        offset1--;
     }
 
     return EEPROM_RESULT_NO_EMPTY_RECORD;
 }
 
-static int eeprom_find_key_from_end(uint32_t address_page, uint16_t key, uint16_t *value, uint32_t *valueShift)
+static int eeprom_find_key_from_end(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint16_t key, uint16_t *value, uint32_t *valueShift)
 {
-    uint32_t shift, stored, search_key;
+    uint32_t offset, stored, search_key;
+    uint32_t result;
 
-    shift = eeprom_info.words_on_page - 1;
+    offset = config->words_on_page - 1;
     search_key = key << 16;
 
     while (1) {
-        if (flash_read_word(address_page + shift * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
-            printf("cannot read value from address %08x", address_page + shift * sizeof(uint32_t));
-            return EEPROM_RESULT_READ_FAILED;
+        if ((result = eeprom_low_read_word(flash_address, config, page_index, offset, &stored)) != EEPROM_RESULT_SUCCESS) {
+            return result;
         }
 
         if ((stored & EEPROM_KEY_MASK) == search_key) {
             *value = (stored & 0x0000ffff);
-            *valueShift = shift;
+            *valueShift = offset;
             return EEPROM_RESULT_SUCCESS;
         }
 
-        if (shift <= 1) {
+        if (offset <= 1) {
             break;
         }
 
-        shift--;
+        offset--;
     }
 
     *value = 0;
@@ -164,15 +219,19 @@ static int eeprom_find_key_from_end(uint32_t address_page, uint16_t key, uint16_
     return EEPROM_RESULT_KEY_NOT_FOUND;
 }
 
-static int eeprom_store_value(uint32_t address_page, uint16_t key, uint16_t value)
+static int eeprom_store_value(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint32_t page_index, uint16_t key, uint16_t value)
 {
-    uint32_t shift = eeprom_info.words_on_page - 1, stored, same = 0xffffffff, same_shift = 0xffffffff;
+    uint32_t offset = config->words_on_page - 1, stored, same = 0xffffffff, same_offset = 0xffffffff;
     uint32_t to_store = (key << 16) | value;
+    uint16_t value_readed;
+    uint32_t result;
 
     // check for overwrite possibility on existing same record
-    switch (eeprom_find_key_from_end(address_page, key, &stored, &same_shift)) {
+    switch (eeprom_find_key_from_end(flash_address, config, page_index, key, &value_readed, &same_offset)) {
         case EEPROM_RESULT_SUCCESS: {
-            same = (key << 16) | stored;
+            same = (key << 16) | value_readed;
 
             // if same value, nothing to do
             if (same == to_store) {
@@ -180,9 +239,8 @@ static int eeprom_store_value(uint32_t address_page, uint16_t key, uint16_t valu
             }
 
             // overwrite if can
-            if (flash_can_overwrite(same, to_store) == FLASH_RESULT_SUCCESS) {
-                flash_write_word(address_page + same_shift * sizeof(uint32_t), to_store);
-                return EEPROM_RESULT_SUCCESS;
+            if ((result = eeprom_low_can_overwrite(same, to_store)) == EEPROM_RESULT_SUCCESS) {
+                return eeprom_low_write_word(flash_address, config, page_index, same_offset, to_store);
             }
 
             break;
@@ -197,77 +255,58 @@ static int eeprom_store_value(uint32_t address_page, uint16_t key, uint16_t valu
         }
     }
 
-    for (shift = 1; shift < eeprom_info.words_on_page; shift++) {
-        if (flash_read_word(address_page + shift * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
-            printf("cannot read value from address %08x", address_page + shift * sizeof(uint32_t));
-            return EEPROM_RESULT_READ_FAILED;
+    for (offset = 1; offset < config->words_on_page; offset++) {
+        if ((result = eeprom_low_read_word(flash_address, config, page_index, offset, &stored)) != EEPROM_RESULT_SUCCESS) {
+            return result;
         }
 
         // if empty record was found, save key and value
         if ((stored & EEPROM_KEY_MASK) == EEPROM_PAGE_EMPTY) {
-            flash_write_word(address_page + shift * sizeof(uint32_t), to_store);
-            return EEPROM_RESULT_SUCCESS;
+            return eeprom_low_write_word(flash_address, config, page_index, offset, to_store);
         }
     }
 
     return EEPROM_RESULT_NO_EMPTY_RECORD;
 }
 
-static int eeprom_move_current_page()
+static int eeprom_move_current_page(
+    uint32_t flash_address, t_eeprom_config *config)
 {
-    uint32_t active_page_address, next_page_address;
-    uint32_t shift, stored, stored_shift;
+    uint32_t active_page_index, next_page_index;
+    uint32_t offset, stored, stored_offset;
     uint16_t stored_key, stored_value;
+    uint32_t result;
 
-    active_page_address = eeprom_info.flash_active_page_address;
+    active_page_index = config->active_page_index;
 
     // where no reason to move page, what cannot be compacted;
     // so check possibility
-    switch (eeprom_can_compact(active_page_address)) {
-        case EEPROM_RESULT_NO_EMPTY_RECORD: {
-            return EEPROM_RESULT_NO_EMPTY_RECORD;
-        }
-
-        case EEPROM_RESULT_READ_FAILED: {
-            printf("read failed\n");
-            return EEPROM_RESULT_READ_FAILED;
-        }
-
-        case EEPROM_RESULT_SUCCESS: {
-            break;
-        }
+    if ((result = eeprom_can_compact(flash_address, config, active_page_index)) != EEPROM_RESULT_SUCCESS) {
+        return result;
     }
 
     // find room to new page
-    switch (eeprom_find_next_empty_page(&next_page_address)) {
-        case EEPROM_RESULT_NO_EMPTY_PAGE: {
-            printf("empty page not found!\n");
-            return EEPROM_RESULT_NO_EMPTY_PAGE;
-        }
-
-        case EEPROM_RESULT_READ_FAILED: {
-            printf("read failed\n");
-            return EEPROM_RESULT_READ_FAILED;
-        }
-
-        case EEPROM_RESULT_SUCCESS: {
-            break;
-        }
+    if ((result = eeprom_find_next_empty_page_index(flash_address, config, &next_page_index)) != EEPROM_RESULT_SUCCESS) {
+        return result;
     }
 
     // current page to copy-out state
-    flash_write_word(active_page_address + 0, EEPROM_PAGE_COPY_OUT);
+    if ((result = eeprom_low_write_word(flash_address, config, active_page_index, 0, EEPROM_PAGE_COPY_OUT)) != EEPROM_RESULT_SUCCESS) {
+        return result;
+    }
+
     // next page to copy-in state
-    flash_write_word(next_page_address + 0, EEPROM_PAGE_COPY_IN);
+    if ((result = eeprom_low_write_word(flash_address, config, next_page_index, 0, EEPROM_PAGE_COPY_IN)) != EEPROM_RESULT_SUCCESS) {
+        return result;
+    }
 
     // from end to start
-    shift = eeprom_info.words_on_page - 1;
+    offset = config->words_on_page - 1;
 
     // iterate records
     while (1) {
-        if (flash_read_word(active_page_address + shift * sizeof(uint32_t), &stored) != FLASH_RESULT_SUCCESS) {
-            printf("cannot read value from address %08x", active_page_address + shift * sizeof(uint32_t));
-            return EEPROM_RESULT_READ_FAILED;
+        if ((result = eeprom_low_read_word(flash_address, config, active_page_index, offset, &stored)) != FLASH_RESULT_SUCCESS) {
+            return result;
         }
 
         if ((stored & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY) {
@@ -276,66 +315,62 @@ static int eeprom_move_current_page()
 
             // find this key on the next page
             // if not found
-            if (eeprom_find_key_from_end(next_page_address, stored_key, &stored_value, &stored_shift) == EEPROM_RESULT_KEY_NOT_FOUND) {
+            if (eeprom_find_key_from_end(flash_address, config, next_page_index, stored_key, &stored_value, &stored_offset) == EEPROM_RESULT_KEY_NOT_FOUND) {
                 // copy from active to next
                 stored_value = stored & 0x0000ffff;
-                eeprom_store_value(next_page_address, stored_key, stored_value);
+
+                if ((result = eeprom_store_value(flash_address, config, next_page_index, stored_key, stored_value)) != EEPROM_RESULT_SUCCESS) {
+                    return result;
+                }
             }
 
             // if found - skip
         }
 
-        if (shift <= 1) {
+        if (offset <= 1) {
             break;
         }
 
-        shift--;
+        offset--;
 
     }
 
     // next page to active state
-    flash_write_word(next_page_address, EEPROM_PAGE_ACTIVE);
-    // current page to empty state
-    // flash_write(next_page_address, 1, state_active);
+    if ((result = eeprom_low_write_word(flash_address, config, next_page_index, 0, EEPROM_PAGE_ACTIVE)) != EEPROM_RESULT_SUCCESS) {
+        return result;
+    }
 
-    eeprom_info.flash_active_page_address = next_page_address;
-    flash_erase_page(active_page_address, eeprom_info.words_on_page);
+    config->active_page_index = next_page_index;
+
+    if ((result = eeprom_low_erase_page(flash_address, config, active_page_index)) != EEPROM_RESULT_SUCCESS) {
+        return result;
+    }
 
     return EEPROM_RESULT_SUCCESS;
 }
 
-int eeprom_read_value(uint16_t key, uint16_t *value)
+int eeprom_read_value(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint16_t key, uint16_t *value)
 {
-    uint32_t shift;
-    return (eeprom_find_key_from_end(eeprom_info.flash_active_page_address, key, value, &shift));
+    uint32_t offset;
+    return (eeprom_find_key_from_end(flash_address, config, config->active_page_index, key, value, &offset));
 }
 
-int eeprom_write_value(uint16_t key, uint16_t value)
+int eeprom_write_value(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint16_t key, uint16_t value)
 {
-    // try store valye
-    switch (eeprom_store_value(eeprom_info.flash_active_page_address, key, value)) {
-        case EEPROM_RESULT_READ_FAILED: {
-            return EEPROM_RESULT_READ_FAILED;
-        }
+    uint32_t result;
 
+    // try store valye
+    switch (result = eeprom_store_value(flash_address, config, config->active_page_index, key, value)) {
         case EEPROM_RESULT_NO_EMPTY_RECORD: {
             // move page
-            switch (eeprom_move_current_page()) {
-                case EEPROM_RESULT_NO_EMPTY_PAGE: {
-                    return EEPROM_RESULT_NO_EMPTY_PAGE;
-                }
-
-                case EEPROM_RESULT_NO_EMPTY_RECORD: {
-                    return EEPROM_RESULT_NO_EMPTY_RECORD;
-                }
-
-                case EEPROM_RESULT_READ_FAILED: {
-                    return EEPROM_RESULT_READ_FAILED;
-                }
-
+            switch (result = eeprom_move_current_page(flash_address, config)) {
                 case EEPROM_RESULT_SUCCESS: {
                     // try store value again
-                    switch (eeprom_store_value(eeprom_info.flash_active_page_address, key, value)) {
+                    switch (result = eeprom_store_value(flash_address, config, config->active_page_index, key, value)) {
                         case EEPROM_RESULT_READ_FAILED: {
                             return EEPROM_RESULT_READ_FAILED;
                         }
@@ -343,76 +378,193 @@ int eeprom_write_value(uint16_t key, uint16_t value)
                         case EEPROM_RESULT_NO_EMPTY_RECORD: {
                             return EEPROM_RESULT_NO_EMPTY_RECORD;
                         }
+
+                        default: {
+                            return result;
+                        }
                     }
 
                     break;
                 }
-            }
 
+                default: {
+                    return result;
+                }
+            }
+        }
+
+        default: {
+            return result;
+        }
+    }
+}
+
+int eeprom_keys_count(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint16_t *count)
+{
+    uint32_t offset1, offset2, stored, search_key;
+    const uint32_t page_index = config->active_page_index;
+    uint32_t result;
+    offset1 = config->words_on_page - 1;
+    *count = 0;
+
+    // Loop external from page end to start
+    while (1) {
+        if ((result = eeprom_low_read_word(flash_address, config, page_index, offset1, &stored)) != EEPROM_RESULT_SUCCESS) {
+            return result;
+        }
+
+
+        if ((stored & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY) {
+            (*count)++;
+            search_key = (stored >> 16) & 0x0000ffff;
+            offset2 = offset1 - 1;
+
+            // Loop internal from external to start
+            while (offset1 > 1) {
+                if ((result = eeprom_low_read_word(flash_address, config, page_index, offset2, &stored)) != EEPROM_RESULT_SUCCESS) {
+                    return result;
+                }
+
+                if (search_key == ((stored >> 16) & 0x0000ffff)) {
+                    (*count)--;
+                    break;
+                }
+
+                if (offset2 <= 1) {
+                    break;
+                }
+
+                offset2--;
+            }
+        }
+
+        if (offset1 <= 1) {
             break;
         }
+
+        offset1--;
     }
 
     return EEPROM_RESULT_SUCCESS;
 }
 
-static int eeprom_format(void)
+int eeprom_read_by_index(
+    uint32_t flash_address, t_eeprom_config *config,
+    uint16_t index, uint16_t *key, uint16_t *value)
 {
-    uint32_t shift, value;
+    uint32_t offset1, offset2, stored, search_key;
+    const uint32_t page_index = config->active_page_index;
+    uint16_t count = 0;
+    uint32_t result;
+    offset1 = config->words_on_page - 1;
+
+    // Loop external from page end to start
+    while (1) {
+        if ((result = eeprom_low_read_word(flash_address, config, page_index, offset1, &stored)) != EEPROM_RESULT_SUCCESS) {
+            return result;
+        }
+
+        if ((stored & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY) {
+            count++;
+            search_key = (stored >> 16) & 0x0000ffff;
+            offset2 = offset1 - 1;
+
+            if (count == index + 1) {
+                *key = (stored >> 16) & 0x0000ffff;
+                *value = stored & 0x0000ffff;
+                return EEPROM_RESULT_SUCCESS;
+            }
+
+            // Loop internal from external to start
+            while (offset1 > 1) {
+                if ((result = eeprom_low_read_word(flash_address, config, page_index, offset2, &stored)) != EEPROM_RESULT_SUCCESS) {
+                    return result;
+                }
+
+                if (search_key == ((stored >> 16) & 0x0000ffff)) {
+                    count--;
+                    break;
+                }
+
+                if (offset2 <= 1) {
+                    break;
+                }
+
+                offset2--;
+            }
+        }
+
+        if (offset1 <= 1) {
+            break;
+        }
+
+        offset1--;
+    }
+
+    return EEPROM_RESULT_KEY_NOT_FOUND;
+}
+
+static int eeprom_format(
+    uint32_t flash_address, t_eeprom_config *config)
+{
+    uint32_t offset, value, page_index;
+    uint32_t result;
 
     // erase
-    for (shift = 0; shift < eeprom_info.pages_count; shift++) {
-        flash_erase_page(eeprom_info.flash_address + shift * eeprom_info.words_on_page * sizeof(uint32_t), eeprom_info.words_on_page);
+    for (page_index = 0; page_index < config->pages_count; page_index++) {
+        eeprom_low_erase_page(flash_address, config, page_index);
     }
 
     // check
-    for (shift = 0; shift < eeprom_info.pages_count * eeprom_info.words_on_page; shift++) {
+    for (page_index = 0; page_index < config->pages_count; page_index++) {
+        for (offset = 0; offset < config->words_on_page; offset++) {
+            if ((result = eeprom_low_read_word(flash_address, config, page_index, offset, &value)) == EEPROM_RESULT_SUCCESS) {
+                return result;
+            }
 
-        if (flash_read_word(eeprom_info.flash_address + shift * sizeof(uint32_t), &value) == FLASH_RESULT_INVALID_ADDRESS) {
-            return EEPROM_RESULT_INVALID_PARAMETERS;
-        }
-
-        if (value != 0xffffffff) {
-            return EEPROM_RESULT_NEED_ERASE;
+            if (value != 0xffffffff) {
+                return EEPROM_RESULT_NEED_ERASE;
+            }
         }
     }
 
     // set first page active
-    switch (flash_write_word(eeprom_info.flash_address, EEPROM_PAGE_ACTIVE)) {
-        case FLASH_RESULT_SUCCESS: {
-            return EEPROM_RESULT_SUCCESS;
-        }
-
-        case FLASH_RESULT_INVALID_ADDRESS: {
-            return EEPROM_RESULT_INVALID_PARAMETERS;
-        }
-
-        case FLASH_RESULT_NEED_ERASE: {
-            return EEPROM_RESULT_NEED_ERASE;
-        }
-
-        default: {
-            return EEPROM_RESULT_UNCATCHED_FAIL;
-        }
-    }
+    return eeprom_low_write_word(flash_address, config, 0, 0, EEPROM_PAGE_ACTIVE);
 }
 
-static int eeprom_check_state(void)
+static int eeprom_check_state(
+    uint32_t flash_address, t_eeprom_config *config)
 {
     /*
      * sequence:
+     * #
      * 0. current: active, next: empty >>>
      * 1.     current: copy-out, next: empty >>>
      * 2.         current: copy-out, next: copy-in >>>
      * 3.             copy from current page to the next page >>>
      * 4.                 current: copy-out, next: active >>>
      * 5.                     current: empty (erased), next: active
+     *
+     *
+     *
+     * seq#  copy_out_exists    copy_in_exists   active_exists   state#  handled
+     *             -                  -                -           0        *
+     * 1.          *                  -                -           1        *
+     *             -                  *                -           2        -
+     * 2.          *                  *                -           3        *
+     * 0.          -                  -                *           4        *
+     * 4.          *                  -                *           5        *
+     *             -                  *                *           6        -
+     *             *                  *                *           7        -
      */
 
-    uint32_t active_address, copy_in_address, copy_out_address;
+    uint32_t active_index, copy_in_index, copy_out_index;
     uint8_t active_exists, copy_in_exists, copy_out_exists;
+    uint32_t result;
 
-    switch (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_address)) {
+    switch (result = eeprom_find_page_by_state(flash_address, config, EEPROM_PAGE_ACTIVE, &active_index)) {
         case EEPROM_RESULT_SUCCESS: {
             active_exists = 1;
             break;
@@ -423,16 +575,12 @@ static int eeprom_check_state(void)
             break;
         }
 
-        case EEPROM_RESULT_READ_FAILED: {
-            return EEPROM_RESULT_READ_FAILED;
-        }
-
         default: {
-            return EEPROM_RESULT_UNCATCHED_FAIL;
+            return result;
         }
     }
 
-    switch (eeprom_find_page_by_state(EEPROM_PAGE_COPY_IN, &copy_in_address)) {
+    switch (result = eeprom_find_page_by_state(flash_address, config, EEPROM_PAGE_COPY_IN, &copy_in_index)) {
         case EEPROM_RESULT_SUCCESS: {
             copy_in_exists = 1;
             break;
@@ -443,16 +591,12 @@ static int eeprom_check_state(void)
             break;
         }
 
-        case EEPROM_RESULT_READ_FAILED: {
-            return EEPROM_RESULT_READ_FAILED;
-        }
-
         default: {
-            return EEPROM_RESULT_UNCATCHED_FAIL;
+            return result;
         }
     }
 
-    switch (eeprom_find_page_by_state(EEPROM_PAGE_COPY_OUT, &copy_out_address)) {
+    switch (result = eeprom_find_page_by_state(flash_address, config, EEPROM_PAGE_COPY_OUT, &copy_out_index)) {
         case EEPROM_RESULT_SUCCESS: {
             copy_out_exists = 1;
             break;
@@ -463,159 +607,69 @@ static int eeprom_check_state(void)
             break;
         }
 
-        case EEPROM_RESULT_READ_FAILED: {
-            return EEPROM_RESULT_READ_FAILED;
-        }
-
         default: {
-            return EEPROM_RESULT_UNCATCHED_FAIL;
+            return result;
         }
     }
 
-    if (!copy_out_exists && !copy_in_exists && active_exists) {
+    if (!copy_out_exists && !copy_in_exists && active_exists) {// state #4
         // all ok
         return EEPROM_RESULT_SUCCESS;
-    } else if (!copy_out_exists && !copy_in_exists && !active_exists) {
+    } else if (!copy_out_exists && !copy_in_exists && !active_exists) { // state #0
         // no one known page found
 
         // format all
-        eeprom_format();
-
-        // set it active
-        switch (flash_write_word(eeprom_info.flash_address, EEPROM_PAGE_ACTIVE)) {
-            case FLASH_RESULT_SUCCESS: {
-                return EEPROM_RESULT_SUCCESS;
-            }
-
-            case FLASH_RESULT_INVALID_ADDRESS: {
-                return EEPROM_RESULT_INVALID_PARAMETERS;
-            }
-
-            case FLASH_RESULT_NEED_ERASE: {
-                return EEPROM_RESULT_NEED_ERASE;
-            }
-
-            default: {
-                return EEPROM_RESULT_UNCATCHED_FAIL;
-            }
+        if ((result = eeprom_format(flash_address, config)) != EEPROM_RESULT_SUCCESS) {
+            return result;
         }
 
-        return EEPROM_RESULT_SUCCESS;
-    } else if (copy_out_exists && !active_exists) {
-        // !copy_in_exists = terminated between 1 and 2, copy-out is a source page;
-        // copy_in_exists = terminated between 2 and 4;
+        // set it active
+        return eeprom_low_write_word(flash_address, config, 0, 0, EEPROM_PAGE_ACTIVE);
+    } else if (copy_out_exists && !active_exists) { // state #1, #3
+        // !copy_in_exists = terminated between seq #1 and seq #2, copy-out is a source page;
+        // copy_in_exists = terminated between seq #2 and seq #4;
 
-        copy_in_address = eeprom_calc_next_page_address(copy_out_address);
+        copy_in_index = eeprom_calc_next_page_index(flash_address, config, copy_out_index);
 
         // erase next page
-        switch (flash_erase_page(copy_in_address, eeprom_info.words_on_page)) {
-            case FLASH_RESULT_SUCCESS: {
-                break;
-            }
-
-            case FLASH_RESULT_INVALID_ADDRESS: {
-                return EEPROM_RESULT_INVALID_PARAMETERS;
-            }
-
-            default: {
-                return EEPROM_RESULT_UNCATCHED_FAIL;
-            }
+        if ((result = eeprom_low_erase_page(flash_address, config, copy_in_index)) != EEPROM_RESULT_SUCCESS) {
+            return result;
         }
 
         // repeat copy
-        eeprom_info.flash_active_page_address = copy_out_address;
+        config->active_page_index = copy_out_index;
 
-        switch (eeprom_move_current_page()) {
-            case EEPROM_RESULT_SUCCESS: {
-                return EEPROM_RESULT_SUCCESS;
-            }
-
-            case EEPROM_RESULT_READ_FAILED: {
-                return EEPROM_RESULT_READ_FAILED;
-            }
-
-            case EEPROM_RESULT_NO_EMPTY_PAGE: {
-                return EEPROM_RESULT_NO_EMPTY_PAGE;
-            }
-
-            default: {
-                return EEPROM_RESULT_UNCATCHED_FAIL;
-            }
-        }
-    } else if (copy_out_exists && active_exists && !copy_in_exists) {
+        return eeprom_move_current_page(flash_address, config);
+    } else if (copy_out_exists && active_exists && !copy_in_exists) { // state #5
         // terminated between 4 and 5
 
         // erase previous page
-        switch (flash_erase_page(copy_out_address, eeprom_info.words_on_page)) {
-            case FLASH_RESULT_SUCCESS: {
-                return EEPROM_RESULT_SUCCESS;
-            }
-
-            case FLASH_RESULT_INVALID_ADDRESS: {
-                return EEPROM_RESULT_INVALID_PARAMETERS;
-            }
-
-            default: {
-                return EEPROM_RESULT_UNCATCHED_FAIL;
-            }
-        }
+        return eeprom_low_erase_page(flash_address, config, copy_out_index);
     }
 
     // unrecognized state, need format
     return EEPROM_RESULT_UNCATCHED_FAIL;
 }
 
-void eeprom_print_debug(uint32_t address, uint32_t size)
+int eeprom_init(
+    uint32_t flash_address, t_eeprom_config *config)
 {
-    uint32_t i, j, k;
-    uint8_t *data = (uint8_t *)address;
+    uint32_t active_page_index;
+    uint32_t result;
 
-    for (i = 0; i < size; i += 256) {
-        printf("Block at 0x%08x\n", address + i);
+    config->total_size = config->pages_count * config->words_on_page * sizeof(uint32_t);
 
-        for (j = 0; j < 256; j += 16) {
-            printf("0x%08x: ", address + i + j);
+    if (eeprom_check_state(flash_address, config) != EEPROM_RESULT_SUCCESS) {
 
-            for (k = 0; k < 16; k++) {
-                printf(" %02x", data[i + j + k]);
-            }
-
-            printf("\n");
+        if ((result = eeprom_format(flash_address, config)) != EEPROM_RESULT_SUCCESS) {
+            return result;
         }
     }
-}
 
-int eeprom_init_debug(
-    uint32_t flash_address,
-    uint32_t words_on_page,
-    uint32_t pages_count)
-{
-    uint32_t active_page_address;
-
-    eeprom_info.flash_address = flash_address;
-    eeprom_info.flash_size = pages_count * words_on_page * sizeof(uint32_t);
-    eeprom_info.words_on_page = words_on_page;
-    eeprom_info.pages_count = pages_count;
-
-    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_ACTIVE);
-
-    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
-    //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_EMPTY);
-
-    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
-    //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_COPY_IN);
-
-    //flash_write_word(eeprom_info.flash_address + 0, EEPROM_PAGE_COPY_OUT);
-    //flash_write_word(eeprom_info.flash_address + eeprom_info.words_on_page, EEPROM_PAGE_ACTIVE);
-
-    if (eeprom_check_state() != EEPROM_RESULT_SUCCESS) {
-        eeprom_format();
-    }
-
-    if (eeprom_find_page_by_state(EEPROM_PAGE_ACTIVE, &active_page_address) == EEPROM_RESULT_SUCCESS) {
-        eeprom_info.flash_active_page_address = active_page_address;
+    if ((result = eeprom_find_page_by_state(flash_address, config, EEPROM_PAGE_ACTIVE, &active_page_index)) == EEPROM_RESULT_SUCCESS) {
+        config->active_page_index = active_page_index;
         return EEPROM_RESULT_SUCCESS;
+    } else {
+        return result;
     }
-
-    return EEPROM_RESULT_UNCATCHED_FAIL;
 }
