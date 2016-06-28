@@ -4,7 +4,7 @@ using testlib.Classes;
 
 namespace testlib.Wrapper
 {
-    internal class Eeprom
+    public class Eeprom
     {
         #region Types
         [StructLayout(LayoutKind.Sequential)]
@@ -102,8 +102,8 @@ namespace testlib.Wrapper
 
         #endregion
 
-        private byte[] mDataBuffer;
-        private Configuration mConfig;
+        protected byte[] mDataBuffer;
+        protected Configuration mConfig;
 
         public Eeprom()
         {
