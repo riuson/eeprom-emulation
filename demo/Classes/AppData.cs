@@ -8,14 +8,17 @@ namespace demo.Classes
 {
     internal class AppData
     {
-        public MemoryDataSource MemoryData { get; private set; }
         public MemorySettings MemorySettings { get; private set; }
+
+        public MemoryDataSource MemoryData { get; private set; }
+        public StoredValuesList StoredValues { get; private set; }
 
         public AppData()
         {
-            this.MemoryData = new MemoryDataSource();
-
             this.MemorySettings = new MemorySettings();
+
+            this.MemoryData = new MemoryDataSource();
+            this.StoredValues = new StoredValuesList();
         }
 
         internal void Reinitialize()

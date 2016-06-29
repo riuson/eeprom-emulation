@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:demo"
         xmlns:AppClasses="clr-namespace:demo.Classes"
         xmlns:AppControlsSetup="clr-namespace:demo.Controls.Setup"
+        xmlns:AppControlsView="clr-namespace:demo.Controls.View"
         mc:Ignorable="d"
         Title="EEPROM Emulation Demo" Height="350" Width="566">
     <Grid>
@@ -20,6 +21,10 @@
                     Apply="ControlSetup_Apply"
                     >
                 </AppControlsSetup:ControlSetup>
+            </TabItem>
+            <TabItem>
+                <AppControlsView:ControlViewStoredValues
+                    ItemsList="{Binding StoredValues.List}"/>
             </TabItem>
         </TabControl>
     </Grid>
