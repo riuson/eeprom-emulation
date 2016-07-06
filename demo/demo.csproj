@@ -58,6 +58,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Controls\View\ControlViewMemoryArray.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Controls\View\ControlViewStoredValues.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -73,9 +77,13 @@
     <Compile Include="Classes\AppData.cs" />
     <Compile Include="Classes\MemorySettings.cs" />
     <Compile Include="Classes\MemoryDataSource.cs" />
+    <Compile Include="Classes\MemoryToDataViewConverter.cs" />
     <Compile Include="Classes\StoredValuesList.cs" />
     <Compile Include="Controls\Setup\ControlSetup.xaml.cs">
       <DependentUpon>ControlSetup.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\View\ControlViewMemoryArray.xaml.cs">
+      <DependentUpon>ControlViewMemoryArray.xaml</DependentUpon>
     </Compile>
     <Compile Include="Controls\View\ControlViewStoredValues.xaml.cs">
       <DependentUpon>ControlViewStoredValues.xaml</DependentUpon>

@@ -26,6 +26,10 @@
                 <AppControlsView:ControlViewStoredValues
                     ItemsList="{Binding StoredValues.List}"/>
             </TabItem>
+            <TabItem>
+                <AppControlsView:ControlViewMemoryArray
+                    MemoryData="{Binding MemoryData}"/>
+            </TabItem>
         </TabControl>
     </Grid>
 </Window>

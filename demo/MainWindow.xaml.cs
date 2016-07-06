@@ -28,6 +28,11 @@ namespace demo
             InitializeComponent();
 
             this.Data = new AppData();
+
+            this.Data.MemorySettings.PagesCountDesired = 1;
+            this.Data.MemorySettings.WordsOnPageDesired = 128;
+            this.Data.Reinitialize();
+
             this.DataContext = this.Data;
         }
 
