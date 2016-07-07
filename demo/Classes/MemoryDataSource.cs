@@ -7,7 +7,24 @@ using testlib.Wrapper;
 
 namespace demo.Classes
 {
-    internal class MemoryDataSource : Eeprom
+    internal class MemoryDataSource : Eeprom, IMemoryView
     {
+        public uint BytesCount
+        {
+            get
+            {
+                return Convert.ToUInt32(this.mDataBuffer.Length);
+            }
+        }
+
+        public byte GetByte(uint index)
+        {
+            if (index >= this.BytesCount)
+            {
+                throw new IndexOutOfRangeException();
+            }
+
+            return this.mDataBuffer[index];
+        }
     }
 }

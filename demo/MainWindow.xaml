@@ -28,7 +28,7 @@
             </TabItem>
             <TabItem>
                 <AppControlsView:ControlViewMemoryArray
-                    MemoryData="{Binding MemoryData}"/>
+                    MemoryData="{Binding MemoryModel}"/>
             </TabItem>
         </TabControl>
     </Grid>

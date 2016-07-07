@@ -12,12 +12,16 @@ namespace demo.Classes
 
         public MemoryDataSource MemoryData { get; private set; }
         public StoredValuesList StoredValues { get; private set; }
+        public MemoryModel MemoryModel { get; private set; }
 
         public AppData()
         {
             this.MemorySettings = new MemorySettings();
 
             this.MemoryData = new MemoryDataSource();
+            this.MemoryModel = new MemoryModel();
+            this.MemoryModel.UpdateData(this.MemoryData, 16);
+
             this.StoredValues = new StoredValuesList();
         }
 
@@ -31,6 +35,8 @@ namespace demo.Classes
                 this.MemorySettings.PagesCount = this.MemoryData.Config.PagesCount;
                 this.MemorySettings.TotalSize = this.MemoryData.Config.TotalSize;
             }
+
+            this.MemoryModel.UpdateData(this.MemoryData, 16);
         }
     }
 }

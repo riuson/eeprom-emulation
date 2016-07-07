@@ -7,12 +7,9 @@
              xmlns:AppClasses="clr-namespace:demo.Classes"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>
-        <AppClasses:MemoryToDataViewConverter x:Key="MemoryToDataViewConverter" />
-    </UserControl.Resources>
     <Grid>
-        <DataGrid
-            ItemsSource="{Binding MemoryData, Converter={StaticResource MemoryToDataViewConverter}, ConverterParameter=1}"
+        <ListBox
+            ItemsSource="{Binding MemoryData}"
             />
     </Grid>
 </UserControl>
