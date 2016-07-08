@@ -6,6 +6,22 @@ using System.Linq;
 
 namespace demo.Classes
 {
+    public class MemoryModelRecordSubItem
+    {
+        private IMemoryView mMemory;
+        public UInt32 Index { get; private set; }
+
+        public MemoryModelRecordSubItem(IMemoryView memory, UInt32 index)
+        {
+            this.mMemory = memory;
+            this.Index = index;
+        }
+
+        public byte Value { get { return this.mMemory.GetByte(this.Index); } }
+
+        public string StringValue { get { return String.Format("{0:X2}", this.Value); } }
+    }
+
     public class MemoryModelRecord
     {
         private IMemoryView mMemory;
@@ -20,6 +36,16 @@ namespace demo.Classes
         }
 
         public UInt32 Offset { get { return this.mIndex * this.mCount; } }
+
+        public MemoryModelRecordSubItem[] Items
+        {
+            get
+            {
+                return Enumerable.Range(0, (int)this.mCount)
+                        .Select(x => new MemoryModelRecordSubItem(this.mMemory, this.Offset + (uint)x))
+                        .ToArray();
+            }
+        }
 
         public override string ToString()
         {
