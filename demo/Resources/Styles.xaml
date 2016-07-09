@@ -8,7 +8,7 @@
     <Style x:Key="TextBlockOffset"
            TargetType="{x:Type TextBlock}">
         <Setter Property="Padding" Value="5, 0, 10, 0" />
-        <Setter Property="Foreground" Value="SkyBlue" />
+        <Setter Property="Foreground" Value="Navy" />
         <Setter Property="FontFamily" Value="Courier New" />
     </Style>
     <Style x:Key="TextBlockRecordSubItem"
@@ -21,7 +21,14 @@
                 <Setter Property="Foreground" Value="Silver" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Start}}" Value="True" >
-                <Setter Property="Background" Value="Green" />
+                <Setter Property="Background" Value="Navy" />
+                <Setter Property="Foreground" Value="Yellow" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Key}}" Value="True" >
+                <Setter Property="Background" Value="Beige" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Value}}" Value="True" >
+                <Setter Property="Background" Value="PaleTurquoise" />
             </DataTrigger>
         </Style.Triggers>
     </Style>

@@ -35,6 +35,7 @@ namespace demo.Classes
                 this.MemorySettings.PagesCount = this.MemoryData.Config.PagesCount;
                 this.MemorySettings.TotalSize = this.MemoryData.Config.TotalSize;
             }
+            this.MemoryData.Write(1, 23);
 
             this.MemoryModel.UpdateData(this.MemoryData, 16);
         }
