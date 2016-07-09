@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using testlib.Wrapper;
 
 namespace demo.Classes
 {
-    internal class MemoryDataSource : Eeprom, IMemoryView
+    internal class MemoryDataSource : Eeprom, IMemoryView, IStoredView
     {
         public uint BytesCount
         {
@@ -60,6 +56,26 @@ namespace demo.Classes
             }
 
             return result;
+        }
+
+        public ushort KeysCount
+        {
+            get
+            {
+                UInt16 result;
+
+                if (base.GetKeysCount(out result) == Result.Success)
+                {
+                    return result;
+                }
+
+                return 0;
+            }
+        }
+
+        public bool GetRecord(UInt16 index, out UInt16 key, out UInt16 value)
+        {
+            return base.ReadByIndex(index, out key, out value) == Result.Success;
         }
     }
 }

@@ -21,17 +21,17 @@ namespace demo.Controls.View
     /// </summary>
     public partial class ControlViewStoredValues : UserControl
     {
-        public static readonly DependencyProperty ItemsListProperty;
+        public static readonly DependencyProperty MemoryDataProperty;
 
         static ControlViewStoredValues()
         {
-            ItemsListProperty = DependencyProperty.Register("ItemsList",
+            MemoryDataProperty = DependencyProperty.Register("MemoryData",
                 typeof(object),
                 typeof(ControlViewStoredValues),
-                new FrameworkPropertyMetadata(new PropertyChangedCallback(ItemsListChanged)));
+                new FrameworkPropertyMetadata(new PropertyChangedCallback(MemoryDataChanged)));
         }
 
-        private static void ItemsListChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void MemoryDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
         }
 
@@ -41,15 +41,15 @@ namespace demo.Controls.View
             (this.Content as FrameworkElement).DataContext = this;
         }
 
-        public object ItemsList
+        public object MemoryData
         {
             get
             {
-                return this.GetValue(ItemsListProperty);
+                return this.GetValue(MemoryDataProperty);
             }
             set
             {
-                this.SetValue(ItemsListProperty, value);
+                this.SetValue(MemoryDataProperty, value);
             }
         }
     }

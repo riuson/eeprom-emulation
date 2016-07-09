@@ -11,7 +11,7 @@ namespace demo.Classes
         public MemorySettings MemorySettings { get; private set; }
 
         public MemoryDataSource MemoryData { get; private set; }
-        public StoredValuesList StoredValues { get; private set; }
+        public StoredRecordsModel StoredModel { get; private set; }
         public MemoryModel MemoryModel { get; private set; }
 
         public AppData()
@@ -22,7 +22,8 @@ namespace demo.Classes
             this.MemoryModel = new MemoryModel();
             this.MemoryModel.UpdateData(this.MemoryData, 16);
 
-            this.StoredValues = new StoredValuesList();
+            this.StoredModel = new StoredRecordsModel();
+            this.StoredModel.UpdateData(this.MemoryData);
         }
 
         internal void Reinitialize()
@@ -35,7 +36,11 @@ namespace demo.Classes
                 this.MemorySettings.PagesCount = this.MemoryData.Config.PagesCount;
                 this.MemorySettings.TotalSize = this.MemoryData.Config.TotalSize;
             }
-            this.MemoryData.Write(1, 23);
+
+            for (ushort i = 0; i < 100; i++)
+            {
+                this.MemoryData.Write(i, i);
+            }
 
             this.MemoryModel.UpdateData(this.MemoryData, 16);
         }

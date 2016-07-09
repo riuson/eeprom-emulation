@@ -77,10 +77,11 @@
     <Compile Include="Classes\AppData.cs" />
     <Compile Include="Classes\ByteTypeEqualsConverter.cs" />
     <Compile Include="Classes\IMemoryView.cs" />
+    <Compile Include="Classes\IStoredView.cs" />
+    <Compile Include="Classes\StoredRecordsModel.cs" />
     <Compile Include="Classes\MemoryModel.cs" />
     <Compile Include="Classes\MemorySettings.cs" />
     <Compile Include="Classes\MemoryDataSource.cs" />
-    <Compile Include="Classes\StoredValuesList.cs" />
     <Compile Include="Controls\Setup\ControlSetup.xaml.cs">
       <DependentUpon>ControlSetup.xaml</DependentUpon>
     </Compile>

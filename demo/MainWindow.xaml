@@ -24,7 +24,7 @@
             </TabItem>
             <TabItem>
                 <AppControlsView:ControlViewStoredValues
-                    ItemsList="{Binding StoredValues.List}"/>
+                    MemoryData="{Binding StoredModel}"/>
             </TabItem>
             <TabItem>
                 <AppControlsView:ControlViewMemoryArray

@@ -4,6 +4,11 @@
                     xmlns:AppClasses="clr-namespace:demo.Classes"
                     xmlns:AppControlsView="clr-namespace:demo.Controls.View"
                     >
+
+    <!--// Colors for key/value //-->
+    <SolidColorBrush x:Key="KeyColor" Color="Beige"/>
+    <SolidColorBrush x:Key="ValueColor" Color="PaleTurquoise"/>
+
     <!--// Styles for memory viewer //-->
     <Style x:Key="TextBlockOffset"
            TargetType="{x:Type TextBlock}">
@@ -25,10 +30,10 @@
                 <Setter Property="Foreground" Value="Yellow" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Key}}" Value="True" >
-                <Setter Property="Background" Value="Beige" />
+                <Setter Property="Background" Value="{StaticResource KeyColor}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Value}}" Value="True" >
-                <Setter Property="Background" Value="PaleTurquoise" />
+                <Setter Property="Background" Value="{StaticResource ValueColor}" />
             </DataTrigger>
         </Style.Triggers>
     </Style>
@@ -47,6 +52,28 @@
                     </ItemsPanelTemplate>
                 </ItemsControl.ItemsPanel>
             </ItemsControl>
+        </StackPanel>
+    </DataTemplate>
+
+    <!--// Styles for stored records viewer //-->
+    <Style x:Key="StoredKey"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="10, 0, 10, 0" />
+        <Setter Property="Background" Value="{StaticResource KeyColor}" />
+        <Setter Property="FontFamily" Value="Courier New" />
+    </Style>
+    <Style x:Key="StoredValue"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="10, 0, 10, 0" />
+        <Setter Property="Background" Value="{StaticResource ValueColor}" />
+        <Setter Property="FontFamily" Value="Courier New" />
+    </Style>
+
+    <!--// DataTemplates for stored records viewer //-->
+    <DataTemplate DataType="{x:Type AppClasses:StoredRecord}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Key, StringFormat={}{0:X4}}" Style="{StaticResource StoredKey}" />
+            <TextBlock Text="{Binding Value, StringFormat={}{0:X4}}" Style="{StaticResource StoredValue}" />
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>
