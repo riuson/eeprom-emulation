@@ -76,4 +76,25 @@
             <TextBlock Text="{Binding Value, StringFormat={}{0:X4}}" Style="{StaticResource StoredValue}" />
         </StackPanel>
     </DataTemplate>
+
+    <!--// Styles for config controls //-->
+    <Style
+        x:Key="TextBlockInfo"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="10, 0, 10, 0" />
+        <Setter Property="Margin" Value="5" />
+    </Style>
+    <Style
+        x:Key="TextBoxInfo"
+        TargetType="{x:Type TextBox}">
+        <Setter Property="Padding" Value="10, 0, 10, 0" />
+        <Setter Property="Margin" Value="5" />
+        <Setter Property="MinWidth" Value="50" />
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+    <Style
+        x:Key="ButtonInfo"
+        TargetType="{x:Type Button}">
+        <Setter Property="Margin" Value="5" />
+    </Style>
 </ResourceDictionary>

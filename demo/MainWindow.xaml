@@ -18,19 +18,28 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition />
         </Grid.RowDefinitions>
-        <AppControlsSetup:ControlSetup
+        <GroupBox
             Grid.Column="0" Grid.Row="0"
-            WordsOnPageDesired="{Binding MemorySettings.WordsOnPageDesired}"
-            PagesCountDesired="{Binding MemorySettings.PagesCountDesired}"
-            WordsOnPage="{Binding MemorySettings.WordsOnPage}"
-            PagesCount="{Binding MemorySettings.PagesCount}"
-            TotalSize="{Binding MemorySettings.TotalSize}"
-            Apply="ControlSetup_Apply" />
-        <AppControlsView:ControlViewStoredValues
+            Header="Configuration">
+            <AppControlsSetup:ControlSetup
+                WordsOnPageDesired="{Binding MemorySettings.WordsOnPageDesired}"
+                PagesCountDesired="{Binding MemorySettings.PagesCountDesired}"
+                WordsOnPage="{Binding MemorySettings.WordsOnPage}"
+                PagesCount="{Binding MemorySettings.PagesCount}"
+                TotalSize="{Binding MemorySettings.TotalSize}"
+                Apply="ControlSetup_Apply" />
+        </GroupBox>
+        <GroupBox
             Grid.Column="0" Grid.Row="1"
-            MemoryData="{Binding StoredModel}"/>
-        <AppControlsView:ControlViewMemoryArray
+            Header="Stored values">
+            <AppControlsView:ControlViewStoredValues
+                MemoryData="{Binding StoredModel}"/>
+        </GroupBox>
+        <GroupBox
             Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
-            MemoryData="{Binding MemoryModel}"/>
+            Header="Memory map">
+            <AppControlsView:ControlViewMemoryArray
+                MemoryData="{Binding MemoryModel}"/>
+        </GroupBox>
     </Grid>
 </Window>

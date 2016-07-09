@@ -33,29 +33,34 @@
                 </Grid.RowDefinitions>
                 <TextBlock
                     Grid.Row="0"
-                    Grid.Column="0">
+                    Grid.Column="0"
+                    Style="{StaticResource TextBlockInfo}">
                     Words on page:
                 </TextBlock>
                 <TextBox
                     Grid.Row="0"
                     Grid.Column="1"
-                    Text="{Binding WordsOnPageDesired}">
+                    Text="{Binding WordsOnPageDesired}"
+                    Style="{StaticResource TextBoxInfo}">
                 </TextBox>
                 <TextBlock
                     Grid.Row="1"
-                    Grid.Column="0">
+                    Grid.Column="0"
+                    Style="{StaticResource TextBlockInfo}">
                     Pages count:
                 </TextBlock>
                 <TextBox
                     Grid.Row="1"
                     Grid.Column="1"
-                    Text="{Binding PagesCountDesired}">
+                    Text="{Binding PagesCountDesired}"
+                    Style="{StaticResource TextBoxInfo}">
                 </TextBox>
                 <Button
                     Grid.Row="2"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
-                    Click="OnApplyClick">
+                    Click="OnApplyClick"
+                    Style="{StaticResource ButtonInfo}">
                     Apply
                 </Button>
             </Grid>
@@ -72,33 +77,39 @@
                 </Grid.RowDefinitions>
                 <TextBlock
                     Grid.Row="0"
-                    Grid.Column="0">
+                    Grid.Column="0"
+                    Style="{StaticResource TextBlockInfo}">
                     Words on page:
                 </TextBlock>
                 <TextBlock
                     Grid.Row="0"
                     Grid.Column="1"
-                    Text="{Binding WordsOnPage}">
+                    Text="{Binding WordsOnPage}"
+                    Style="{StaticResource TextBlockInfo}">
                 </TextBlock>
                 <TextBlock
                     Grid.Row="1"
-                    Grid.Column="0">
+                    Grid.Column="0"
+                    Style="{StaticResource TextBlockInfo}">
                     Pages count:
                 </TextBlock>
                 <TextBlock
                     Grid.Row="1"
                     Grid.Column="1"
-                    Text="{Binding PagesCount}">
+                    Text="{Binding PagesCount}"
+                    Style="{StaticResource TextBlockInfo}">
                 </TextBlock>
                 <TextBlock
                     Grid.Row="2"
-                    Grid.Column="0">
+                    Grid.Column="0"
+                    Style="{StaticResource TextBlockInfo}">
                     Total size:
                 </TextBlock>
                 <TextBlock
                     Grid.Row="2"
                     Grid.Column="1"
-                    Text="{Binding TotalSize}">
+                    Text="{Binding TotalSize}"
+                    Style="{StaticResource TextBlockInfo}">
                 </TextBlock>
             </Grid>
         </StackPanel>
