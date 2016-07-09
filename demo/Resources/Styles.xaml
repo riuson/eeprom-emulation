@@ -1,0 +1,23 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:demo.Resources"
+                    xmlns:AppClasses="clr-namespace:demo.Classes"
+                    xmlns:AppControlsView="clr-namespace:demo.Controls.View"
+                    >
+    <!--// DataTemplates for memory viewer //-->
+    <DataTemplate DataType="{x:Type AppClasses:MemoryModelRecordSubItem}">
+        <TextBlock Text="{Binding Value, StringFormat={}{0:X2}}" />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type AppClasses:MemoryModelRecord}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Offset, StringFormat={}{0:X8}}" />
+            <ItemsControl ItemsSource="{Binding Items, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

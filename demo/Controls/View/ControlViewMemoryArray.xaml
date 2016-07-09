@@ -8,23 +8,6 @@
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>
-        <DataTemplate DataType="{x:Type AppClasses:MemoryModelRecordSubItem}">
-            <TextBlock Text="{Binding Value, StringFormat={}{0:X2}}" />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type AppClasses:MemoryModelRecord}">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="{Binding Offset, StringFormat={}{0:X8}}" />
-                <ItemsControl ItemsSource="{Binding Items, Mode=OneWay}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Orientation="Horizontal" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                </ItemsControl>
-            </StackPanel>
-        </DataTemplate>
-    </UserControl.Resources>
     <Grid>
         <ListBox ItemsSource="{Binding MemoryData}" />
     </Grid>
