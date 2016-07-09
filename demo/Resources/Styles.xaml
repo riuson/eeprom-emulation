@@ -16,6 +16,11 @@
         <Setter Property="Padding" Value="5, 0, 0, 0" />
         <Setter Property="Foreground" Value="Navy" />
         <Setter Property="FontFamily" Value="Courier New" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsClean}" Value="True">
+                <Setter Property="Foreground" Value="Silver" />
+            </DataTrigger>
+        </Style.Triggers>
     </Style>
 
     <!--// DataTemplates for memory viewer //-->
