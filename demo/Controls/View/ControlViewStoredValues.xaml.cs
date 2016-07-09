@@ -1,18 +1,7 @@
 ﻿using demo.Classes;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace demo.Controls.View
 {
@@ -22,13 +11,26 @@ namespace demo.Controls.View
     public partial class ControlViewStoredValues : UserControl
     {
         public static readonly DependencyProperty MemoryDataProperty;
+        public static readonly DependencyProperty KeyProperty;
+        public static readonly DependencyProperty ValueProperty;
 
         static ControlViewStoredValues()
         {
             MemoryDataProperty = DependencyProperty.Register("MemoryData",
-                typeof(object),
+                typeof(StoredRecordsModel),
+                typeof(ControlViewStoredValues));
+
+            KeyProperty = DependencyProperty.Register("Key",
+                typeof(UInt16),
                 typeof(ControlViewStoredValues),
-                new FrameworkPropertyMetadata(new PropertyChangedCallback(MemoryDataChanged)));
+                new PropertyMetadata(
+                    (UInt16)0));
+
+            ValueProperty = DependencyProperty.Register("Value",
+                typeof(UInt16),
+                typeof(ControlViewStoredValues),
+                new PropertyMetadata(
+                    (UInt16)0));
         }
 
         private static void MemoryDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -41,15 +43,49 @@ namespace demo.Controls.View
             (this.Content as FrameworkElement).DataContext = this;
         }
 
-        public object MemoryData
+        public StoredRecordsModel MemoryData
         {
             get
             {
-                return this.GetValue(MemoryDataProperty);
+                return (StoredRecordsModel)this.GetValue(MemoryDataProperty);
             }
             set
             {
                 this.SetValue(MemoryDataProperty, value);
+            }
+        }
+
+        public UInt16 Key
+        {
+            get
+            {
+                return Convert.ToUInt16(this.GetValue(KeyProperty));
+            }
+            set
+            {
+                this.SetValue(KeyProperty, value);
+            }
+        }
+
+        public UInt16 Value
+        {
+            get
+            {
+                return Convert.ToUInt16(this.GetValue(ValueProperty));
+            }
+            set
+            {
+                this.SetValue(ValueProperty, value);
+            }
+        }
+
+        private void ListBoxStoredValues_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0)
+            {
+                StoredRecord record = e.AddedItems[0] as StoredRecord;
+                this.Key = record.Key;
+                this.Value = record.Value;
             }
         }
     }
