@@ -97,4 +97,10 @@
         TargetType="{x:Type Button}">
         <Setter Property="Margin" Value="5" />
     </Style>
+
+    <!--// Remove borders from ListBox //-->
+    <Style
+        TargetType="ListBox">
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
 </ResourceDictionary>
