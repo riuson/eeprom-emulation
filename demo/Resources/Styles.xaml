@@ -4,13 +4,27 @@
                     xmlns:AppClasses="clr-namespace:demo.Classes"
                     xmlns:AppControlsView="clr-namespace:demo.Controls.View"
                     >
+    <!--// Styles for memory viewer //-->
+    <Style x:Key="TextBlockOffset"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="5, 0, 10, 0" />
+        <Setter Property="Foreground" Value="SkyBlue" />
+        <Setter Property="FontFamily" Value="Courier New" />
+    </Style>
+    <Style x:Key="TextBlockRecordSubItem"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="5, 0, 0, 0" />
+        <Setter Property="Foreground" Value="Navy" />
+        <Setter Property="FontFamily" Value="Courier New" />
+    </Style>
+
     <!--// DataTemplates for memory viewer //-->
     <DataTemplate DataType="{x:Type AppClasses:MemoryModelRecordSubItem}">
-        <TextBlock Text="{Binding Value, StringFormat={}{0:X2}}" />
+        <TextBlock Text="{Binding Value, StringFormat={}{0:X2}}" Style="{StaticResource TextBlockRecordSubItem}" />
     </DataTemplate>
     <DataTemplate DataType="{x:Type AppClasses:MemoryModelRecord}">
         <StackPanel Orientation="Horizontal">
-            <TextBlock Text="{Binding Offset, StringFormat={}{0:X8}}" />
+            <TextBlock Text="{Binding Offset, StringFormat={}{0:X8}}" Style="{StaticResource TextBlockOffset}" />
             <ItemsControl ItemsSource="{Binding Items, Mode=OneWay}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
