@@ -46,17 +46,6 @@ namespace demo.Classes
                         .ToArray();
             }
         }
-
-        public override string ToString()
-        {
-            return
-                String.Format("{0:X8}: ", this.Offset)
-                +
-                String.Join(
-                    " ",
-                    Enumerable.Range(0, (int)this.mCount)
-                        .Select(x => this.mMemory.GetByte(this.mIndex + (uint)x).ToString("X2")));
-        }
     }
 
     public class MemoryModelEnumerator : IEnumerator<MemoryModelRecord>
