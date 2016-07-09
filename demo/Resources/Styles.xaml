@@ -20,6 +20,9 @@
             <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Clean}}" Value="True" >
                 <Setter Property="Foreground" Value="Silver" />
             </DataTrigger>
+            <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Start}}" Value="True" >
+                <Setter Property="Background" Value="Green" />
+            </DataTrigger>
         </Style.Triggers>
     </Style>
 

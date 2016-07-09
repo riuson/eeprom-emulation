@@ -36,6 +36,11 @@ namespace demo.Classes
                 result |= ByteType.Clean;
             }
 
+            if ((index & 0xfffffffcu) == this.Config.ActivePageIndex * this.Config.WordsOnPage * sizeof(UInt32))
+            {
+                result |= ByteType.Start;
+            }
+
             return result;
         }
     }
