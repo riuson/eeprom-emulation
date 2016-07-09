@@ -18,8 +18,6 @@ namespace demo.Classes
         }
 
         public byte Value { get { return this.mMemory.GetByte(this.Index); } }
-
-        public string StringValue { get { return String.Format("{0:X2}", this.Value); } }
     }
 
     public class MemoryModelRecord
