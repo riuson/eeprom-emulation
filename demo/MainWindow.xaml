@@ -8,28 +8,29 @@
         xmlns:AppControlsSetup="clr-namespace:demo.Controls.Setup"
         xmlns:AppControlsView="clr-namespace:demo.Controls.View"
         mc:Ignorable="d"
-        Title="EEPROM Emulation Demo" Height="350" Width="566">
+        Title="EEPROM Emulation Demo" Height="550" Width="766">
     <Grid>
-        <TabControl>
-            <TabItem>
-                <AppControlsSetup:ControlSetup
-                    WordsOnPageDesired="{Binding MemorySettings.WordsOnPageDesired}"
-                    PagesCountDesired="{Binding MemorySettings.PagesCountDesired}"
-                    WordsOnPage="{Binding MemorySettings.WordsOnPage}"
-                    PagesCount="{Binding MemorySettings.PagesCount}"
-                    TotalSize="{Binding MemorySettings.TotalSize}"
-                    Apply="ControlSetup_Apply"
-                    >
-                </AppControlsSetup:ControlSetup>
-            </TabItem>
-            <TabItem>
-                <AppControlsView:ControlViewStoredValues
-                    MemoryData="{Binding StoredModel}"/>
-            </TabItem>
-            <TabItem>
-                <AppControlsView:ControlViewMemoryArray
-                    MemoryData="{Binding MemoryModel}"/>
-            </TabItem>
-        </TabControl>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <AppControlsSetup:ControlSetup
+            Grid.Column="0" Grid.Row="0"
+            WordsOnPageDesired="{Binding MemorySettings.WordsOnPageDesired}"
+            PagesCountDesired="{Binding MemorySettings.PagesCountDesired}"
+            WordsOnPage="{Binding MemorySettings.WordsOnPage}"
+            PagesCount="{Binding MemorySettings.PagesCount}"
+            TotalSize="{Binding MemorySettings.TotalSize}"
+            Apply="ControlSetup_Apply" />
+        <AppControlsView:ControlViewStoredValues
+            Grid.Column="0" Grid.Row="1"
+            MemoryData="{Binding StoredModel}"/>
+        <AppControlsView:ControlViewMemoryArray
+            Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
+            MemoryData="{Binding MemoryModel}"/>
     </Grid>
 </Window>
