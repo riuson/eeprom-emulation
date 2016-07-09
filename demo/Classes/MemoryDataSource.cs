@@ -26,5 +26,17 @@ namespace demo.Classes
 
             return this.mDataBuffer[index];
         }
+
+        public ByteType GetByteType(uint index)
+        {
+            ByteType result = ByteType.None;
+
+            if (this.GetByte(index) == 0xffu)
+            {
+                result |= ByteType.Clean;
+            }
+
+            return result;
+        }
     }
 }

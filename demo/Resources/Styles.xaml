@@ -13,11 +13,11 @@
     </Style>
     <Style x:Key="TextBlockRecordSubItem"
            TargetType="{x:Type TextBlock}">
-        <Setter Property="Padding" Value="5, 0, 0, 0" />
+        <Setter Property="Padding" Value="3, 0, 3, 0" />
         <Setter Property="Foreground" Value="Navy" />
         <Setter Property="FontFamily" Value="Courier New" />
         <Style.Triggers>
-            <DataTrigger Binding="{Binding IsClean}" Value="True">
+            <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Clean}}" Value="True" >
                 <Setter Property="Foreground" Value="Silver" />
             </DataTrigger>
         </Style.Triggers>

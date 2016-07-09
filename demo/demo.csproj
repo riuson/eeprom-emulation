@@ -75,6 +75,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Classes\AppData.cs" />
+    <Compile Include="Classes\ByteTypeEqualsConverter.cs" />
     <Compile Include="Classes\IMemoryView.cs" />
     <Compile Include="Classes\MemoryModel.cs" />
     <Compile Include="Classes\MemorySettings.cs" />

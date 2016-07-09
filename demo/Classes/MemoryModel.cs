@@ -19,7 +19,7 @@ namespace demo.Classes
 
         public byte Value { get { return this.mMemory.GetByte(this.Index); } }
 
-        public bool IsClean { get { return this.Value == 0xffu; } }
+        public ByteType ByteType { get { return this.mMemory.GetByteType(this.Index); } }
     }
 
     public class MemoryModelRecord
