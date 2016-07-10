@@ -76,6 +76,7 @@
     </Compile>
     <Compile Include="Classes\AppData.cs" />
     <Compile Include="Classes\ByteTypeEqualsConverter.cs" />
+    <Compile Include="Classes\Commands.cs" />
     <Compile Include="Classes\IMemoryView.cs" />
     <Compile Include="Classes\IStoredView.cs" />
     <Compile Include="Classes\StoredRecordsModel.cs" />

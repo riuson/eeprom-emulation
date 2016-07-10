@@ -9,6 +9,9 @@
         xmlns:AppControlsView="clr-namespace:demo.Controls.View"
         mc:Ignorable="d"
         Title="EEPROM Emulation Demo" Height="550" Width="766">
+    <Window.CommandBindings>
+        <CommandBinding Command="AppClasses:Commands.ApplyConfiguration" Executed="ApplyConfiguration_Executed" />
+    </Window.CommandBindings>
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
@@ -22,12 +25,9 @@
             Grid.Column="0" Grid.Row="0"
             Header="Configuration">
             <AppControlsSetup:ControlSetup
-                WordsOnPageDesired="{Binding MemorySettings.WordsOnPageDesired}"
-                PagesCountDesired="{Binding MemorySettings.PagesCountDesired}"
                 WordsOnPage="{Binding MemorySettings.WordsOnPage}"
                 PagesCount="{Binding MemorySettings.PagesCount}"
-                TotalSize="{Binding MemorySettings.TotalSize}"
-                Apply="ControlSetup_Apply" />
+                TotalSize="{Binding MemorySettings.TotalSize}" />
         </GroupBox>
         <GroupBox
             Grid.Column="0" Grid.Row="1"

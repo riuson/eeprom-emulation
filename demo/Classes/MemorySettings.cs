@@ -9,9 +9,6 @@ namespace demo.Classes
 {
     internal class MemorySettings : DependencyObject
     {
-        public static readonly DependencyProperty WordsOnPageDesiredProperty;
-        public static readonly DependencyProperty PagesCountDesiredProperty;
-
         public static readonly DependencyProperty WordsOnPageProperty;
         public static readonly DependencyProperty PagesCountProperty;
         public static readonly DependencyProperty TotalSizeProperty;
@@ -19,28 +16,6 @@ namespace demo.Classes
 
         static MemorySettings()
         {
-            WordsOnPageDesiredProperty = DependencyProperty.Register("WordsOnPageDesired",
-                typeof(UInt32), typeof(MemorySettings),
-                new FrameworkPropertyMetadata(
-                    256u,
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
-                    new PropertyChangedCallback(MemorySettings.WordsOnPageDesiredChanged),
-                    new CoerceValueCallback(MemorySettings.WordsOnPageDesiredCoerce),
-                    false,
-                    System.Windows.Data.UpdateSourceTrigger.LostFocus),
-                new ValidateValueCallback(MemorySettings.IsValidWordsOnPageDesired));
-
-            PagesCountDesiredProperty = DependencyProperty.Register("PagesCountDesired",
-                typeof(UInt32), typeof(MemorySettings),
-                new FrameworkPropertyMetadata(
-                    2u,
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
-                    new PropertyChangedCallback(MemorySettings.PagesCountDesiredChanged),
-                    new CoerceValueCallback(MemorySettings.PagesCountDesiredCoerce),
-                    false,
-                    System.Windows.Data.UpdateSourceTrigger.LostFocus),
-                new ValidateValueCallback(MemorySettings.IsValidPagesCountDesired));
-
             WordsOnPageProperty = DependencyProperty.Register("WordsOnPage",
                 typeof(UInt32), typeof(MemorySettings),
                 new FrameworkPropertyMetadata());
@@ -57,78 +32,6 @@ namespace demo.Classes
                 typeof(UInt32), typeof(MemorySettings),
                 new FrameworkPropertyMetadata());
         }
-
-        #region WordsOnPageDesired
-        private static void WordsOnPageDesiredChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-        }
-
-        private static object WordsOnPageDesiredCoerce(DependencyObject d, object baseValue)
-        {
-            UInt32 v = Convert.ToUInt32(baseValue);
-
-            if (v < 1024u)
-            {
-                return baseValue;
-            }
-
-            return 1024u;
-        }
-
-        private static bool IsValidWordsOnPageDesired(object value)
-        {
-            return true;
-        }
-
-        public UInt32 WordsOnPageDesired
-        {
-            get
-            {
-                return Convert.ToUInt32(this.GetValue(MemorySettings.WordsOnPageDesiredProperty));
-            }
-            set
-            {
-                this.SetValue(MemorySettings.WordsOnPageDesiredProperty, value);
-            }
-        }
-
-        #endregion
-
-        #region PagesCountDesired
-        private static void PagesCountDesiredChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-        }
-
-        private static object PagesCountDesiredCoerce(DependencyObject d, object baseValue)
-        {
-            UInt32 v = Convert.ToUInt32(baseValue);
-
-            if (v < 10u)
-            {
-                return baseValue;
-            }
-
-            return 10u;
-        }
-
-        private static bool IsValidPagesCountDesired(object value)
-        {
-            return true;
-        }
-
-        public UInt32 PagesCountDesired
-        {
-            get
-            {
-                return Convert.ToUInt32(this.GetValue(MemorySettings.PagesCountDesiredProperty));
-            }
-            set
-            {
-                this.SetValue(MemorySettings.PagesCountDesiredProperty, value);
-            }
-        }
-
-        #endregion
 
         #region WordsOnPage
 

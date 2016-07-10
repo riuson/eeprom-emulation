@@ -26,9 +26,9 @@ namespace demo.Classes
             this.StoredModel.UpdateData(this.MemoryData);
         }
 
-        internal void Reinitialize()
+        internal void Reinitialize(UInt32 wordsOnPageDesired, UInt32 pagesCountDesired)
         {
-            var result = this.MemoryData.Initialize(this.MemorySettings.WordsOnPageDesired, this.MemorySettings.PagesCountDesired);
+            var result = this.MemoryData.Initialize(wordsOnPageDesired, pagesCountDesired);
 
             if (result == testlib.Wrapper.Eeprom.Result.Success)
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using demo.Classes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -127,9 +128,7 @@ namespace demo.Controls.Setup
 
         private void OnApplyClick(object sender, RoutedEventArgs e)
         {
-            this.Apply?.Invoke(this, EventArgs.Empty);
+            Commands.ApplyConfiguration.Execute(new Tuple<UInt32, UInt32>(this.WordsOnPageDesired, this.PagesCountDesired), (Button)sender);
         }
-
-        public event EventHandler Apply;
     }
 }

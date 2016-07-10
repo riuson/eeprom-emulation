@@ -29,16 +29,19 @@ namespace demo
 
             this.Data = new AppData();
 
-            this.Data.MemorySettings.PagesCountDesired = 1;
-            this.Data.MemorySettings.WordsOnPageDesired = 128;
-            this.Data.Reinitialize();
+            this.Data.Reinitialize(128, 1);
 
             this.DataContext = this.Data;
         }
 
-        private void ControlSetup_Apply(object sender, EventArgs e)
+        private void ApplyConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            this.Data.Reinitialize();
+            var args = e.Parameter as Tuple<UInt32, UInt32>;
+
+            if (args != null)
+            {
+                this.Data.Reinitialize(args.Item1, args.Item2);
+            }
         }
     }
 }
