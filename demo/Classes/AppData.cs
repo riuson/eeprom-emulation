@@ -41,8 +41,12 @@ namespace demo.Classes
             {
                 this.MemoryData.Write(i, i);
             }
+        }
 
+        public void UpdateSubscribers()
+        {
             this.MemoryModel.UpdateData(this.MemoryData, 16);
+            this.StoredModel.UpdateData(this.MemoryData);
         }
     }
 }

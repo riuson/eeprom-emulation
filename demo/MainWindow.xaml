@@ -11,6 +11,7 @@
         Title="EEPROM Emulation Demo" Height="550" Width="766">
     <Window.CommandBindings>
         <CommandBinding Command="AppClasses:Commands.ApplyConfiguration" Executed="ApplyConfiguration_Executed" />
+        <CommandBinding Command="AppClasses:Commands.StoreValue" Executed="StoreValue_Executed" />
     </Window.CommandBindings>
     <Grid>
         <Grid.ColumnDefinitions>

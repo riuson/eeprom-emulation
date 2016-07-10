@@ -88,5 +88,10 @@ namespace demo.Controls.View
                 this.Value = record.Value;
             }
         }
+
+        private void ButtonStoreValue_Click(object sender, RoutedEventArgs e)
+        {
+            Commands.StoreValue.Execute(new Tuple<UInt16, UInt16>(this.Key, this.Value), (Button)sender);
+        }
     }
 }

@@ -32,6 +32,8 @@ namespace demo
             this.Data.Reinitialize(128, 1);
 
             this.DataContext = this.Data;
+
+            this.Data.UpdateSubscribers();
         }
 
         private void ApplyConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -41,6 +43,18 @@ namespace demo
             if (args != null)
             {
                 this.Data.Reinitialize(args.Item1, args.Item2);
+                this.Data.UpdateSubscribers();
+            }
+        }
+
+        private void StoreValue_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            var args = e.Parameter as Tuple<UInt16, UInt16>;
+
+            if (args != null)
+            {
+                var res = this.Data.MemoryData.Write(args.Item1, args.Item2);
+                this.Data.UpdateSubscribers();
             }
         }
     }
