@@ -1,18 +1,7 @@
 ﻿using demo.Classes;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace demo.Controls.Setup
 {
@@ -35,14 +24,18 @@ namespace demo.Controls.Setup
                 typeof(ControlSetup),
                 new FrameworkPropertyMetadata(
                     0u,
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                    new PropertyChangedCallback(WordsOnPageDesiredChangedCallback),
+                    new CoerceValueCallback(WordsOnPageDesiredCoerceValueCallback)));
 
             PagesCountDesiredProperty = DependencyProperty.Register("PagesCountDesired",
                 typeof(UInt32),
                 typeof(ControlSetup),
                 new FrameworkPropertyMetadata(
                     0u,
-                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                    new PropertyChangedCallback(PagesCountDesiredChangedCallback),
+                    new CoerceValueCallback(PagesCountDesiredCoerceValueCallback)));
 
             WordsOnPageProperty = DependencyProperty.Register("WordsOnPage",
                 typeof(UInt32),
@@ -66,6 +59,7 @@ namespace demo.Controls.Setup
             (this.Content as FrameworkElement).DataContext = this;
         }
 
+        #region WordsOnPageDesired
         public UInt32 WordsOnPageDesired
         {
             get
@@ -78,6 +72,18 @@ namespace demo.Controls.Setup
             }
         }
 
+        private static void WordsOnPageDesiredChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+        }
+
+        private static object WordsOnPageDesiredCoerceValueCallback(DependencyObject d, object baseValue)
+        {
+            UInt32 wordsOnPage = Convert.ToUInt32(baseValue);
+            return Math.Min(wordsOnPage, 1024u);
+        }
+        #endregion
+
+        #region PagesCountDesired
         public UInt32 PagesCountDesired
         {
             get
@@ -89,6 +95,17 @@ namespace demo.Controls.Setup
                 this.SetValue(PagesCountDesiredProperty, value);
             }
         }
+
+        private static void PagesCountDesiredChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+        }
+
+        private static object PagesCountDesiredCoerceValueCallback(DependencyObject d, object baseValue)
+        {
+            UInt32 wordsOnPage = Convert.ToUInt32(baseValue);
+            return Math.Min(wordsOnPage, 10u);
+        }
+        #endregion
 
         public UInt32 WordsOnPage
         {
