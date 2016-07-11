@@ -161,5 +161,52 @@ namespace testlib.Tests
                 }
             }
         }
+
+        [Test]
+        public void CannotRelocateFilledByUniques()
+        {
+            // 1
+            for (ushort i = 0; i < Convert.ToUInt16(WordsOnPage - 1); i++)
+            {
+                Eeprom.Result result = this.mMemory.Write(i, 0xff00);
+
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+            }
+
+            // 2
+            for (ushort i = 0; i < Convert.ToUInt16(WordsOnPage - 1); i++)
+            {
+                Eeprom.Result result = this.mMemory.Write(i, 0x00ff);
+
+                Assert.That(result, Is.EqualTo(Eeprom.Result.NoEmptyRecord));
+            }
+        }
+
+        [Test]
+        public void CanRelocateFilledByDuplicates()
+        {
+            ushort[] array = this.GenerateArray(WordsOnPage - 2);
+
+            // 1
+            for (ushort i = 0; i < Convert.ToUInt16(array.Length); i++)
+            {
+                Eeprom.Result result = this.mMemory.Write(i, array[i]);
+
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+            }
+
+            for (ushort i = 0; i < Convert.ToUInt16(array.Length); i++)
+            {
+                array[i]++;
+            }
+
+            // 2
+            for (ushort i = 0; i < Convert.ToUInt16(array.Length); i++)
+            {
+                Eeprom.Result result = this.mMemory.Write(i, array[i]);
+
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+            }
+        }
     }
 }
