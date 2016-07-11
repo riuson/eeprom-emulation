@@ -1,0 +1,46 @@
+﻿<Window x:Class="demo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:demo"
+        xmlns:AppClasses="clr-namespace:demo.Classes"
+        xmlns:AppControlsSetup="clr-namespace:demo.Controls.Setup"
+        xmlns:AppControlsView="clr-namespace:demo.Controls.View"
+        mc:Ignorable="d"
+        Title="EEPROM Emulation Demo" Height="550" Width="766">
+    <Window.CommandBindings>
+        <CommandBinding Command="AppClasses:Commands.ApplyConfiguration" Executed="ApplyConfiguration_Executed" />
+        <CommandBinding Command="AppClasses:Commands.StoreValue" Executed="StoreValue_Executed" />
+    </Window.CommandBindings>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition />
+        </Grid.RowDefinitions>
+        <GroupBox
+            Grid.Column="0" Grid.Row="0"
+            Header="Configuration">
+            <AppControlsSetup:ControlSetup
+                WordsOnPage="{Binding MemorySettings.WordsOnPage}"
+                PagesCount="{Binding MemorySettings.PagesCount}"
+                TotalSize="{Binding MemorySettings.TotalSize}" />
+        </GroupBox>
+        <GroupBox
+            Grid.Column="0" Grid.Row="1"
+            Header="Stored values">
+            <AppControlsView:ControlViewStoredValues
+                MemoryData="{Binding StoredModel}"/>
+        </GroupBox>
+        <GroupBox
+            Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
+            Header="Memory map">
+            <AppControlsView:ControlViewMemoryArray
+                MemoryData="{Binding MemoryModel}"/>
+        </GroupBox>
+    </Grid>
+</Window>

@@ -1,0 +1,106 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:demo.Resources"
+                    xmlns:AppClasses="clr-namespace:demo.Classes"
+                    xmlns:AppControlsView="clr-namespace:demo.Controls.View"
+                    >
+
+    <!--// Colors for key/value //-->
+    <SolidColorBrush x:Key="KeyColor" Color="Beige"/>
+    <SolidColorBrush x:Key="ValueColor" Color="PaleTurquoise"/>
+
+    <!--// Styles for memory viewer //-->
+    <Style x:Key="TextBlockOffset"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="5, 0, 10, 0" />
+        <Setter Property="Foreground" Value="Navy" />
+        <Setter Property="FontFamily" Value="Courier New" />
+    </Style>
+    <Style x:Key="TextBlockRecordSubItem"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="3, 0, 3, 0" />
+        <Setter Property="Foreground" Value="Navy" />
+        <Setter Property="FontFamily" Value="Courier New" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Clean}}" Value="True" >
+                <Setter Property="Foreground" Value="Silver" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Start}}" Value="True" >
+                <Setter Property="Background" Value="Navy" />
+                <Setter Property="Foreground" Value="Yellow" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Key}}" Value="True" >
+                <Setter Property="Background" Value="{StaticResource KeyColor}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding ByteType, Converter={x:Static AppClasses:ByteTypeEqualsConverter.Instance}, ConverterParameter={x:Static AppClasses:ByteType.Value}}" Value="True" >
+                <Setter Property="Background" Value="{StaticResource ValueColor}" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--// DataTemplates for memory viewer //-->
+    <DataTemplate DataType="{x:Type AppClasses:MemoryModelRecordSubItem}">
+        <TextBlock Text="{Binding Value, StringFormat={}{0:X2}}" Style="{StaticResource TextBlockRecordSubItem}" />
+    </DataTemplate>
+    <DataTemplate DataType="{x:Type AppClasses:MemoryModelRecord}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Offset, StringFormat={}{0:X8}}" Style="{StaticResource TextBlockOffset}" />
+            <ItemsControl ItemsSource="{Binding Items, Mode=OneWay}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </StackPanel>
+    </DataTemplate>
+
+    <!--// Styles for stored records viewer //-->
+    <Style x:Key="StoredKey"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="10, 0, 10, 0" />
+        <Setter Property="Background" Value="{StaticResource KeyColor}" />
+        <Setter Property="FontFamily" Value="Courier New" />
+    </Style>
+    <Style x:Key="StoredValue"
+           TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="10, 0, 10, 0" />
+        <Setter Property="Background" Value="{StaticResource ValueColor}" />
+        <Setter Property="FontFamily" Value="Courier New" />
+    </Style>
+
+    <!--// DataTemplates for stored records viewer //-->
+    <DataTemplate DataType="{x:Type AppClasses:StoredRecord}">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="{Binding Key, StringFormat={}{0:X4}}" Style="{StaticResource StoredKey}" />
+            <TextBlock Text="{Binding Value, StringFormat={}{0:X4}}" Style="{StaticResource StoredValue}" />
+        </StackPanel>
+    </DataTemplate>
+
+    <!--// Styles for config controls //-->
+    <Style
+        x:Key="TextBlockInfo"
+        TargetType="{x:Type TextBlock}">
+        <Setter Property="Padding" Value="10, 0, 10, 0" />
+        <Setter Property="Margin" Value="5" />
+    </Style>
+    <Style
+        x:Key="TextBoxInfo"
+        TargetType="{x:Type TextBox}">
+        <Setter Property="Padding" Value="10, 0, 10, 0" />
+        <Setter Property="Margin" Value="5" />
+        <Setter Property="MinWidth" Value="50" />
+        <Setter Property="TextAlignment" Value="Center" />
+    </Style>
+    <Style
+        x:Key="ButtonInfo"
+        TargetType="{x:Type Button}">
+        <Setter Property="Margin" Value="5" />
+    </Style>
+
+    <!--// Remove borders from ListBox //-->
+    <Style
+        TargetType="ListBox">
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+</ResourceDictionary>
