@@ -27,11 +27,11 @@
         <TextBox
             Grid.Row="1" Grid.Column="0"
             Style="{StaticResource TextBoxInfo}"
-            Text="{Binding Key}" />
+            Text="{Binding Key, StringFormat={}{0} (0x{0:X2})}" />
         <TextBox
             Grid.Row="1" Grid.Column="1"
             Style="{StaticResource TextBoxInfo}"
-            Text="{Binding Value}" />
+            Text="{Binding Value, StringFormat={}{0} (0x{0:X2})}" />
         <Button
             Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
             Style="{StaticResource ButtonInfo}"
