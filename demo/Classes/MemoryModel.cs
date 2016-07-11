@@ -129,7 +129,10 @@ namespace demo.Classes
             this.mMemory = memory;
             this.ColumnsCount = columns;
 
-            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            if (this.CollectionChanged != null)
+            {
+                this.CollectionChanged.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
         }
 
         public MemoryModelRecord this[int index]

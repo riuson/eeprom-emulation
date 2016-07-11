@@ -126,7 +126,10 @@ namespace demo.Classes
         {
             this.mStored = stored;
 
-            this.CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            if (this.CollectionChanged != null)
+            {
+                this.CollectionChanged.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            }
         }
 
         public StoredRecord this[int index]
