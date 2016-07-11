@@ -55,6 +55,11 @@ namespace demo
             {
                 var res = this.Data.MemoryData.Write(args.Item1, args.Item2);
                 this.Data.UpdateSubscribers();
+
+                if (res != testlib.Wrapper.Eeprom.Result.Success)
+                {
+                    MessageBox.Show(res.ToString(), "Store value result");
+                }
             }
         }
     }
