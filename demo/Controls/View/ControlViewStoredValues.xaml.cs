@@ -24,14 +24,46 @@ namespace demo.Controls.View
                 typeof(UInt16),
                 typeof(ControlViewStoredValues),
                 new PropertyMetadata(
-                    (UInt16)0));
+                    (UInt16)0,
+                    new PropertyChangedCallback(KeyChangedCallback),
+                    new CoerceValueCallback(KeyCoerceValueCallback)));
 
             ValueProperty = DependencyProperty.Register("Value",
                 typeof(UInt16),
                 typeof(ControlViewStoredValues),
                 new PropertyMetadata(
-                    (UInt16)0));
+                    (UInt16)0,
+                    new PropertyChangedCallback(ValueChangedCallback),
+                    new CoerceValueCallback(ValueCoerceValueCallback)));
         }
+
+        #region Key callback
+
+        private static void KeyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+        }
+
+        private static object KeyCoerceValueCallback(DependencyObject d, object baseValue)
+        {
+            UInt16 key = Convert.ToUInt16(baseValue);
+            return Convert.ToUInt16(Math.Min(key, 65535u));
+        }
+
+        #endregion
+
+        #region Value callback
+
+        private static void ValueChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+        }
+
+        private static object ValueCoerceValueCallback(DependencyObject d, object baseValue)
+        {
+            UInt16 value = Convert.ToUInt16(baseValue);
+            return Convert.ToUInt16(Math.Min(value, 65535u));
+        }
+
+        #endregion
 
         private static void MemoryDataChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
