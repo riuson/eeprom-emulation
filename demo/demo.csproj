@@ -79,6 +79,7 @@
     <Compile Include="Classes\Commands.cs" />
     <Compile Include="Classes\IMemoryView.cs" />
     <Compile Include="Classes\IStoredView.cs" />
+    <Compile Include="Classes\SelectTextOnFocus.cs" />
     <Compile Include="Classes\StoredRecordsModel.cs" />
     <Compile Include="Classes\MemoryModel.cs" />
     <Compile Include="Classes\MemorySettings.cs" />
