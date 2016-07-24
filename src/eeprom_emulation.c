@@ -403,10 +403,12 @@ int eeprom_keys_count(
     uint32_t flash_address, t_eeprom_config *config,
     uint16_t *count)
 {
-    uint32_t offset1, offset2, stored, search_key;
+    uint32_t offset1, offset2, stored, search_key, offset_top;
     const uint32_t page_index = config->active_page_index;
     uint32_t result;
+    uint8_t is_unique_check_result;
     offset1 = config->words_on_page - 1;
+    offset_top = 0xffffffff;
     *count = 0;
 
     // Loop external from page end to start
@@ -415,28 +417,38 @@ int eeprom_keys_count(
             return result;
         }
 
-
         if ((stored & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY) {
-            (*count)++;
-            search_key = (stored >> 16) & 0x0000ffff;
-            offset2 = offset1 - 1;
+            // Remember first used offset
+            if (offset_top == 0xffffffff) {
+                offset_top = offset1;
+            }
 
-            // Loop internal from external to start
-            while (offset1 > 1) {
+            search_key = (stored >> 16) & 0x0000ffff;
+            offset2 = offset1 + 1;
+            is_unique_check_result = 1;
+
+            // Loop internal from external to top
+            while (offset2 <= offset_top) {
+                is_unique_check_result = 1;
+
                 if ((result = eeprom_low_read_word(flash_address, config, page_index, offset2, &stored)) != EEPROM_RESULT_SUCCESS) {
                     return result;
                 }
 
                 if (search_key == ((stored >> 16) & 0x0000ffff)) {
-                    (*count)--;
+                    if (offset1 != offset2) {
+                        is_unique_check_result = 0;
+                    }
+
                     break;
                 }
 
-                if (offset2 <= 1) {
-                    break;
-                }
+                offset2++;
+            }
 
-                offset2--;
+            // If key is unique
+            if (is_unique_check_result == 1) {
+                (*count)++;
             }
         }
 
@@ -454,11 +466,13 @@ int eeprom_read_by_index(
     uint32_t flash_address, t_eeprom_config *config,
     uint16_t index, uint16_t *key, uint16_t *value)
 {
-    uint32_t offset1, offset2, stored, search_key;
+    uint32_t offset1, offset2, stored, search_key, offset_top, stored_value;
     const uint32_t page_index = config->active_page_index;
     uint16_t count = 0;
     uint32_t result;
+    uint8_t is_unique_check_result;
     offset1 = config->words_on_page - 1;
+    offset_top = 0xffffffff;
 
     // Loop external from page end to start
     while (1) {
@@ -467,32 +481,45 @@ int eeprom_read_by_index(
         }
 
         if ((stored & EEPROM_KEY_MASK) != EEPROM_PAGE_EMPTY) {
-            count++;
-            search_key = (stored >> 16) & 0x0000ffff;
-            offset2 = offset1 - 1;
-
-            if (count == index + 1) {
-                *key = (stored >> 16) & 0x0000ffff;
-                *value = stored & 0x0000ffff;
-                return EEPROM_RESULT_SUCCESS;
+            // Remember first used offset
+            if (offset_top == 0xffffffff) {
+                offset_top = offset1;
             }
 
-            // Loop internal from external to start
-            while (offset1 > 1) {
+            search_key = (stored >> 16) & 0x0000ffff;
+            stored_value = stored & 0x0000ffff;
+            offset2 = offset1 + 1;
+            is_unique_check_result = 1;
+
+            // Loop internal from external to top
+            while (offset2 <= offset_top) {
+                is_unique_check_result = 1;
+
                 if ((result = eeprom_low_read_word(flash_address, config, page_index, offset2, &stored)) != EEPROM_RESULT_SUCCESS) {
                     return result;
                 }
 
                 if (search_key == ((stored >> 16) & 0x0000ffff)) {
-                    count--;
+                    if (offset1 != offset2) {
+                        is_unique_check_result = 0;
+                    }
+
                     break;
                 }
 
-                if (offset2 <= 1) {
-                    break;
+                offset2++;
+            }
+
+            // If key is unique
+            if (is_unique_check_result == 1) {
+                // If desired index was found
+                if (count == index) {
+                    *key = search_key;
+                    *value = stored_value;
+                    return EEPROM_RESULT_SUCCESS;
                 }
 
-                offset2--;
+                count++;
             }
         }
 

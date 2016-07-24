@@ -47,7 +47,7 @@ namespace testlib.Tests
         }
 
         [Test]
-        public void CanReadAll(
+        public void CanReadByIndex(
             [Range(0u, WordsOnPage + 40u, WordsOnPage / 7u)]
             uint count)
         {
@@ -88,6 +88,57 @@ namespace testlib.Tests
                 {
                     Assert.That(readed[i], Is.EqualTo(array[i]));
                 }
+            }
+        }
+
+        [Test]
+        public void CanReadByIndex2()
+        {
+            Eeprom.Result result;
+            Dictionary<ushort, ushort> list = new Dictionary<ushort, ushort>();
+            list.Add(1, 1);
+            list.Add(2, 2);
+            list.Add(3, 3);
+            list.Add(4, 4);
+            list.Add(5, 5);
+            list.Add(6, 6);
+            list.Add(7, 7);
+            list.Add(8, 8);
+
+            foreach (var kvp in list)
+            {
+                result = this.mMemory.Write(kvp.Key, kvp.Value);
+            }
+
+            list[1] = Convert.ToUInt16(list[1] + 1);
+            list[2] = Convert.ToUInt16(list[2] + 1);
+            list[3] = Convert.ToUInt16(list[3] + 1);
+
+            foreach (var kvp in list)
+            {
+                result = this.mMemory.Write(kvp.Key, kvp.Value);
+            }
+
+            ushort countStored;
+            result = this.mMemory.GetKeysCount(out countStored);
+            Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+            Assert.That(countStored, Is.EqualTo(list.Count));
+
+            Dictionary<ushort, ushort> readed = new Dictionary<ushort, ushort>();
+
+            for (ushort i = 0; i < countStored; i++)
+            {
+                ushort key, value;
+                result = this.mMemory.ReadByIndex(i, out key, out value);
+                Assert.That(result, Is.EqualTo(Eeprom.Result.Success));
+                readed.Add(key, value);
+            }
+
+            foreach (var readedItem in readed)
+            {
+                Assert.That(list.ContainsKey(readedItem.Key), Is.True);
+
+                Assert.That(readedItem.Value, Is.EqualTo(list[readedItem.Key]));
             }
         }
 
