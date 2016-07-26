@@ -36,17 +36,20 @@ namespace demo.Classes
                 this.MemorySettings.PagesCount = this.MemoryData.Config.PagesCount;
                 this.MemorySettings.TotalSize = this.MemoryData.Config.TotalSize;
             }
-
-            for (ushort i = 0; i < 100; i++)
-            {
-                this.MemoryData.Write(i, i);
-            }
         }
 
         public void UpdateSubscribers()
         {
             this.MemoryModel.UpdateData(this.MemoryData, 16);
             this.StoredModel.UpdateData(this.MemoryData);
+        }
+
+        public void GenerateTestValuesList(UInt32 count)
+        {
+            for (ushort i = 0; i < count; i++)
+            {
+                this.MemoryData.Write(i, i);
+            }
         }
     }
 }

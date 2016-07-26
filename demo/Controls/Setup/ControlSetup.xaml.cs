@@ -12,6 +12,7 @@ namespace demo.Controls.Setup
     {
         public static readonly DependencyProperty WordsOnPageDesiredProperty;
         public static readonly DependencyProperty PagesCountDesiredProperty;
+        public static readonly DependencyProperty DemoArraySizeProperty;
 
         public static readonly DependencyProperty WordsOnPageProperty;
         public static readonly DependencyProperty PagesCountProperty;
@@ -36,6 +37,15 @@ namespace demo.Controls.Setup
                     FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
                     new PropertyChangedCallback(PagesCountDesiredChangedCallback),
                     new CoerceValueCallback(PagesCountDesiredCoerceValueCallback)));
+
+            DemoArraySizeProperty = DependencyProperty.Register("DemoArraySize",
+                typeof(UInt32),
+                typeof(ControlSetup),
+                new FrameworkPropertyMetadata(
+                    0u,
+                    FrameworkPropertyMetadataOptions.BindsTwoWayByDefault,
+                    new PropertyChangedCallback(DemoArraySizeChangedCallback),
+                    new CoerceValueCallback(DemoArraySizeCoerceValueCallback)));
 
             WordsOnPageProperty = DependencyProperty.Register("WordsOnPage",
                 typeof(UInt32),
@@ -107,6 +117,31 @@ namespace demo.Controls.Setup
         }
         #endregion
 
+        #region DemoArraySize
+        public UInt32 DemoArraySize
+        {
+            get
+            {
+                return Convert.ToUInt32(this.GetValue(DemoArraySizeProperty));
+            }
+            set
+            {
+                this.SetValue(DemoArraySizeProperty, value);
+            }
+        }
+
+        private static void DemoArraySizeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+        }
+
+        private static object DemoArraySizeCoerceValueCallback(DependencyObject d, object baseValue)
+        {
+            UInt32 wordsOnPage = Convert.ToUInt32(baseValue);
+            ControlSetup control = d as ControlSetup;
+            return Math.Min(wordsOnPage, control.WordsOnPageDesired - 1);
+        }
+        #endregion
+
         public UInt32 WordsOnPage
         {
             get
@@ -145,7 +180,7 @@ namespace demo.Controls.Setup
 
         private void OnApplyClick(object sender, RoutedEventArgs e)
         {
-            Commands.ApplyConfiguration.Execute(new Tuple<UInt32, UInt32>(this.WordsOnPageDesired, this.PagesCountDesired), (Button)sender);
+            Commands.ApplyConfiguration.Execute(new Tuple<UInt32, UInt32, UInt32>(this.WordsOnPageDesired, this.PagesCountDesired, this.DemoArraySize), (Button)sender);
         }
     }
 }
