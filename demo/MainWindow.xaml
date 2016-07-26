@@ -26,6 +26,8 @@
             Grid.Column="0" Grid.Row="0"
             Header="Configuration">
             <AppControlsSetup:ControlSetup
+                WordsOnPageDesired="{Binding MemorySettings.WordsOnPage, Mode=OneWay}"
+                PagesCountDesired="{Binding MemorySettings.WordsOnPage, Mode=OneWay}"
                 WordsOnPage="{Binding MemorySettings.WordsOnPage}"
                 PagesCount="{Binding MemorySettings.PagesCount}"
                 TotalSize="{Binding MemorySettings.TotalSize}" />

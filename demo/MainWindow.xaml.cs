@@ -38,11 +38,12 @@ namespace demo
 
         private void ApplyConfiguration_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            var args = e.Parameter as Tuple<UInt32, UInt32>;
+            var args = e.Parameter as Tuple<UInt32, UInt32, UInt32>;
 
             if (args != null)
             {
                 this.Data.Reinitialize(args.Item1, args.Item2);
+                this.Data.GenerateTestValuesList(args.Item3);
                 this.Data.UpdateSubscribers();
             }
         }

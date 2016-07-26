@@ -31,6 +31,7 @@
                     <RowDefinition/>
                     <RowDefinition/>
                     <RowDefinition/>
+                    <RowDefinition/>
                 </Grid.RowDefinitions>
                 <TextBlock
                     Grid.Row="0"
@@ -58,8 +59,21 @@
                     Text="{Binding PagesCountDesired}"
                     Style="{StaticResource TextBoxInfo}">
                 </TextBox>
-                <Button
+                <TextBlock
                     Grid.Row="2"
+                    Grid.Column="0"
+                    Style="{StaticResource TextBlockInfo}">
+                    Test values count:
+                </TextBlock>
+                <TextBox
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Classes:SelectTextOnFocus.Active="True"
+                    Text="{Binding DemoArraySize}"
+                    Style="{StaticResource TextBoxInfo}">
+                </TextBox>
+                <Button
+                    Grid.Row="3"
                     Grid.Column="0"
                     Grid.ColumnSpan="2"
                     Click="OnApplyClick"
